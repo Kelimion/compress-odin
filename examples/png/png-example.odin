@@ -128,6 +128,10 @@ main :: proc() {
 							fmt.printf("[iCCP] %v\n", res);
 						}
 						png.png_iccp_destroy(res);
+					case .sRGB:
+						if res, ok_srgb := png.png_srgb(c); ok_srgb {
+							fmt.printf("[sRGB] Rendering intent: %v\n", res);
+						}
 					case:
 						type := c.header.type;
 						name := png.chunk_type_to_name(&type);

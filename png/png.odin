@@ -219,6 +219,17 @@ PNG_iCCP :: struct {
 	profile: []u8,
 }
 
+PNG_sRGB_Rendering_Intent :: enum u8 {
+	Perceptual = 0,
+	Relative_colorimetric = 1,
+	Saturation = 2,
+	Absolute_colorimetric = 3,
+}
+
+PNG_sRGB :: struct #packed {
+	intent: PNG_sRGB_Rendering_Intent,
+}
+
 ADAM7_X_ORIG    := []int{ 0,4,0,2,0,1,0 };
 ADAM7_Y_ORIG    := []int{ 0,0,4,0,2,0,1 };
 ADAM7_X_SPACING := []int{ 8,8,4,4,2,2,1 };

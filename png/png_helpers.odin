@@ -196,6 +196,20 @@ png_iccp_destroy :: proc(i: PNG_iCCP) {
 
 }
 
+png_srgb :: proc(c: PNG_Chunk) -> (res: PNG_sRGB, ok: bool) {
+	ok = true;
+
+	if c.header.type != .sRGB || len(c.data) != 1 {
+		return {}, false;
+	}
+
+	res.intent = PNG_sRGB_Rendering_Intent(c.data[0]);
+	if res.intent > max(PNG_sRGB_Rendering_Intent) {
+		ok = false; return;
+	}
+	return;
+}
+
 png_plte :: proc(c: PNG_Chunk) -> (res: PNG_PLTE, ok: bool) {
 	if c.header.type != .PLTE {
 		return {}, false;
