@@ -24,159 +24,11 @@ is_kind   :: common.is_kind;
 main :: proc() {
 	file: string;
 
-	options: Image_Options;
+	options := Image_Options{.return_metadata, .alpha_drop_if_present, .alpha_premultiply};
 	err:     Error;
 	img:     ^Image;
 
 	file = "logo-slim";
-
-	// Filter tests
-		// Filter: None
-	// file = "f00n0g08";
-	// file = "f00n2c08";
-	// // Filter: Sub
-	// file = "f01n0g08";
-	// file = "f01n2c08";
-	// // Filter: Up
-	// file = "f02n0g08";
-	// file = "f02n2c08";
-	// // Filter: Average
-	// file = "f03n0g08";
-	// file = "f03n2c08";
-	// // Filter: Paeth
-	// file = "f04n0g08";
-	// file = "f04n2c08";
-
-	// // 1, 2 and 4 bit grayscale
-	// file = "basn0g01";
-	// file = "basn0g02";
-	// file = "basn0g04";
-
-	// // 1, 2 and 4 bit paletted
-	// file = "basn3p01";
-	// file = "basn3p02";
-	// file = "basn3p04";
-
-	// // 8 + 16 bit + alpha
-	// file = "basn4a08"; // Grayscale + Alpha 8-bit
-	// file = "basn6a08"; // Color + Alpha 8-bit
-
-	// file = "basn4a16"; // Grayscale + Alpha 16-bit
-	// file = "basn6a16"; // Color + Alpha 16-bit
-
-	// // Interlace tests
-
-	// file = "basi0g01";
-	// file = "basi0g02";
-	// file = "basi0g04";
-	// file = "basi0g08";
-	// file = "basi0g16";
-	// file = "basi2c08";
-	// file = "basn2c16";
-
-	// file = "basi3p01";
-	// file = "basi3p02";
-	// file = "basi3p04";
-	// file = "basi3p08";
-	// file = "basi4a08";
-	// file = "basi4a16";
-	// file = "basi6a08";
-	// file = "basi6a16";
-
-	// Background tests
-	// file = "bgai4a08";
-	// file = "bgai4a16";
-	// file = "bgan6a08";
-	// file = "bgan6a16";
-	// file = "bgbn4a08";
-	// file = "bggn4a16";
-	// file = "bgwn6a08";
-	// file = "bgyn6a16";
-
-	// Transparency chunk
-	// file = "tbbn0g04";
-	// file = "tbbn2c16";
-	// file = "tbbn3p08";
-	// file = "tbgn2c16";
-	// file = "tbgn3p08";
-	// file = "tbrn2c08";
-	// file = "tbwn0g16";
-	// file = "tbwn3p08";
-	// file = "tbyn3p08";
-	// file = "tp0n0g08";
-	// file = "tp0n2c08";
-	// file = "tp0n3p08";
-	// file = "tp1n3p08";
-	// file = "tm3n3p02";
-
-	// Curious dimensions
-	// file = "s01i3p01"; // 1x1 paletted file, interlaced
-	// file = "s01n3p01"; // 1x1 paletted file, no interlacing
-	// file = "s02i3p01"; // 2x2 paletted file, interlaced
-	// file = "s02n3p01"; // 2x2 paletted file, no interlacing
-	// file = "s03i3p01"; // 3x3 paletted file, interlaced
-	// file = "s03n3p01"; // 3x3 paletted file, no interlacing
-	// file = "s04i3p01"; // 4x4 paletted file, interlaced
-	// file = "s04n3p01"; // 4x4 paletted file, no interlacing
-	// file = "s05i3p02"; // 5x5 paletted file, interlaced
-	// file = "s05n3p02"; // 5x5 paletted file, no interlacing
-	// file = "s06i3p02"; // 6x6 paletted file, interlaced
-	// file = "s06n3p02"; // 6x6 paletted file, no interlacing
-	// file = "s07i3p02"; // 7x7 paletted file, interlaced
-	// file = "s07n3p02"; // 7x7 paletted file, no interlacing
-	// file = "s08i3p02"; // 8x8 paletted file, interlaced
-	// file = "s08n3p02"; // 8x8 paletted file, no interlacing
-	// file = "s09i3p02"; // 9x9 paletted file, interlaced
-	// file = "s09n3p02"; // 9x9 paletted file, no interlacing
-	// file = "s32i3p04"; // 32x32 paletted file, interlaced
-	// file = "s32n3p04"; // 32x32 paletted file, no interlacing
-	// file = "s33i3p04"; // 33x33 paletted file, interlaced
-	// file = "s33n3p04"; // 33x33 paletted file, no interlacing
-	// file = "s34i3p04"; // 34x34 paletted file, interlaced
-	// file = "s34n3p04"; // 34x34 paletted file, no interlacing
-	// file = "s35i3p04"; // 35x35 paletted file, interlaced
-	// file = "s35n3p04"; // 35x35 paletted file, no interlacing
-	// file = "s36i3p04"; // 36x36 paletted file, interlaced
-	// file = "s36n3p04"; // 36x36 paletted file, no interlacing
-	// file = "s37i3p04"; // 37x37 paletted file, interlaced
-	// file = "s37n3p04"; // 37x37 paletted file, no interlacing
-	// file = "s38i3p04"; // 38x38 paletted file, interlaced
-	// file = "s38n3p04"; // 38x38 paletted file, no interlacing
-	// file = "s39i3p04"; // 39x39 paletted file, interlaced
-	// file = "s39n3p04"; // 39x39 paletted file, no interlacing
-	// file = "s40i3p04"; // 40x40 paletted file, interlaced
-	// file = "s40n3p04"; // 40x40 paletted file, no interlacing
-
-
-	// Ancillary chunks:
-	// file = "ccwn2c08"; // Chroma
-	// file = "ch1n3p04"; // Histogram
-	// file = "ch2n3p08"; // Histogram
-	// file = "ct1n0g04"; // tEXt
-	// file = "ctzn0g04"; // zTXt
-	// file = "ctjn0g04"; // iTXt
-	// file = "cm0n0g04"; // Time
-	// file = "cm7n0g04"; // Time
-	// file = "cm9n0g04"; // Time
-	// file = "exif2c08"; // EXIF
-
-	// Suggested palette:
-	// file = "pp0n2c16"; // six-cube palette-chunk in true-color image
-	// file = "pp0n6a08"; // six-cube palette-chunk in true-color+alpha image
-	// file = "ps1n0g08"; // six-cube suggested palette (1 byte) in grayscale image
-	// file = "ps1n2c16"; // six-cube suggested palette (1 byte) in true-color image
-	// file = "ps2n0g08"; // six-cube suggested palette (2 bytes) in grayscale image
-	// file = "ps2n2c16"; // six-cube suggested palette (2 bytes) in true-color image
-
-	// sBIT
-	file = "cs3n2c16"; // color, 13 significant bits
-	// file = "cs3n3p08"; // paletted, 3 significant bits
-	// file = "cs5n2c08"; // color, 5 significant bits
-	// file = "cs5n3p08"; // paletted, 5 significant bits
-	// file = "cs8n2c08"; // color, 8 significant bits (reference)
-	// file = "cs8n3p08"; // paletted, 8 significant bits (reference)
-
-	options = png.Image_Options{.return_metadata, .alpha_drop_if_present, .alpha_premultiply};
 
 	file = fmt.tprintf("../../test/%v.png", file);
 
@@ -270,6 +122,12 @@ main :: proc() {
 						if res, ok_sbit := png.png_sbit(c); ok_sbit {
 							fmt.printf("[sBIT] %v\n", res);
 						}
+					case .iCCP:
+						res, ok_iccp := png.png_iccp(c);
+						if ok_iccp {
+							fmt.printf("[iCCP] %v\n", res);
+						}
+						png.png_iccp_destroy(res);
 					case:
 						type := c.header.type;
 						name := png.chunk_type_to_name(&type);

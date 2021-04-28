@@ -7,6 +7,8 @@ import "core:strings"
 import "core:bytes"
 import "core:mem"
 
+// import "core:fmt"
+
 /*
 	These are a few useful utility functions to work with PNG images.
 */
@@ -156,6 +158,42 @@ png_text_destroy :: proc(text: PNG_Text) {
 	delete(text.keyword_localized);
 	delete(text.language);
 	delete(text.text);
+}
+
+png_iccp :: proc(c: PNG_Chunk) -> (res: PNG_iCCP, ok: bool) {
+	ok = true;
+
+	fields := bytes.split_n(s=c.data, sep=[]u8{0}, n=3, allocator=context.temp_allocator);
+
+	if len(fields[0]) < 1 || len(fields[0]) > 79 {
+		// Invalid profile name
+		ok = false; return;
+	}
+
+	if len(fields[1]) != 0 {
+		// Compression method should be a zero, which the split turned into an empty slice.
+		ok = false; return;
+	}
+
+	// Set up ZLIB context and decompress iCCP payload
+	buf: bytes.Buffer;
+	zlib_error := zlib.inflate_from_byte_array(&fields[2], &buf);
+	if !is_kind(zlib_error, E_General, E_General.OK) {
+		bytes.buffer_destroy(&buf);
+		ok = false; return;
+	}
+
+	res.name = strings.clone(string(fields[0]));
+	res.profile = bytes.buffer_to_bytes(&buf);
+
+	return;
+}
+
+png_iccp_destroy :: proc(i: PNG_iCCP) {
+	delete(i.name);
+
+	delete(i.profile);
+
 }
 
 png_plte :: proc(c: PNG_Chunk) -> (res: PNG_PLTE, ok: bool) {
