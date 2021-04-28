@@ -1,0 +1,9 @@
+*.png
+*.exe
+*.obj
+*.ll
+*.pdb
+*.ppm
+*.py
+test/*
+profiler/*
