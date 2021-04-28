@@ -33,13 +33,7 @@ main :: proc() {
 	file = fmt.tprintf("../../test/%v.png", file);
 
 	img, err = png.load_png(file, options);
-	defer {
-		// Make a utility function to free an image, including chunks and pixels.
-		if png.is_kind(err, png.E_General, png.E_General.OK) {
-			bytes.buffer_destroy(&img.pixels);
-			free(img);
-		}
-	}
+	defer png.png_destroy(img);
 
 	if !png.is_kind(err, png.E_General, png.E_General.OK) {
 		fmt.printf("Trying to read PNG file %v returned %v\n", file, err);
@@ -50,9 +44,6 @@ main :: proc() {
 		fmt.printf("Image: %vx%vx%v, %v-bit.\n", img.width, img.height, img.channels, img.depth);
 
 		if v, ok = img.sidecar.(png.PNG_Info); ok {
-			// We don't need to free the contents of [dynamic]PNG_Chunk itself.
-			// Unlike the image data, they're allocated using the temp allocator.
-			defer delete(v.chunks);
 			// Handle ancillary chunks as you wish.
 			// We provide helper functions for a few types.
 			for c in v.chunks {

@@ -13,6 +13,22 @@ import "core:mem"
 	These are a few useful utility functions to work with PNG images.
 */
 
+/*
+	Cleanup of image-specific data. For cleanup of PNG chunk helpers, see png_helpers.odin.
+	Those are named *_destroy, where * is the name of the helper.
+*/
+
+png_destroy :: proc(img: ^Image) {
+	bytes.buffer_destroy(&img.pixels);
+
+	/*
+		We don't need to do anything for the individual chunks.
+		They're allocated on the temp allocator, as is info.chunks
+
+		See png_read_chunk.
+	*/
+	free(img);
+}
 
 /*
 	Chunk helpers

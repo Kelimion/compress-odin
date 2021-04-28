@@ -401,7 +401,7 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 
 	header:	PNG_IHDR;
 	info:   PNG_Info;
-	info.chunks.allocator = allocator;
+	info.chunks.allocator = context.temp_allocator;
 
 	// State to ensure correct chunk ordering.
 	seen_ihdr := false; first := true;
