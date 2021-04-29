@@ -6,8 +6,6 @@ import "core:bytes"
 import "core:os"
 
 main :: proc() {
-	using gzip;
-
 	// Set up output buffer.
 	buf: bytes.Buffer;
 	defer bytes.buffer_destroy(&buf);
@@ -34,12 +32,12 @@ main :: proc() {
 		if file == "-" {
 			// Read from stdin
 			s := os.stream_from_handle(os.stdin);
-			err = load_gzip_from_stream(&s, &buf);
+			err = gzip.load(&s, &buf);
 		} else {
-			err = load_gzip_from_file(file, &buf);
+			err = gzip.load(file, &buf);
 		}
-		if !is_kind(err, E_General.OK) {
-			if is_kind(err, E_General.File_Not_Found) {
+		if !gzip.is_kind(err, gzip.E_General.OK) {
+			if gzip.is_kind(err, gzip.E_General.File_Not_Found) {
 				stderr("File not found: ");
 				stderr(file);
 				stderr("\n");

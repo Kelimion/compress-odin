@@ -11,21 +11,21 @@ import "core:hash"
 	Returns: Error. You can use zlib.is_kind or common.is_kind to easily test for OK.
 */
 
-ZLIB_Context :: common.Context;
+Context :: common.Context;
 
-ZLIB_Compression_Method :: enum u8 {
+Compression_Method :: enum u8 {
 	DEFLATE  = 8,
 	Reserved = 15,
 }
 
-ZLIB_Compression_Level :: enum u8 {
+Compression_Level :: enum u8 {
 	Fastest = 0,
 	Fast    = 1,
     Default = 2,
     Maximum = 3,
 }
 
-ZLIB_Options :: struct {
+Options :: struct {
 	window_size: u16,
 	level: u8,
 }
@@ -41,9 +41,9 @@ DEFLATE_MAX_LITERAL_SIZE :: 65535;
 DEFLATE_MAX_DISTANCE     :: 32768;
 DEFLATE_MAX_LENGTH       :: 258;
 
-ZLIB_HUFFMAN_MAX_BITS  :: 16;
-ZLIB_HUFFMAN_FAST_BITS :: 9;
-ZLIB_HUFFMAN_FAST_MASK :: ((1 << ZLIB_HUFFMAN_FAST_BITS) - 1);
+HUFFMAN_MAX_BITS  :: 16;
+HUFFMAN_FAST_BITS :: 9;
+HUFFMAN_FAST_MASK :: ((1 << HUFFMAN_FAST_BITS) - 1);
 
 Z_LENGTH_BASE := [31]u16{
 	3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,
@@ -93,7 +93,7 @@ ZFAST_MASK :: ((1 << ZFAST_BITS) - 1);
 	ZLIB-style Huffman encoding.
 	JPEG packs from left, ZLIB from right. We can't share code.
 */
-ZLIB_Huffman_Table :: struct {
+Huffman_Table :: struct {
    fast: [1 << ZFAST_BITS]u16,
    firstcode: [16]u16,
    maxcode: [17]int,
@@ -118,7 +118,7 @@ z_bit_reverse :: #force_inline proc(n: u16, bits: u8) -> (r: u16) {
 	return;
 }
 
-write_byte :: #force_inline proc(z: ^ZLIB_Context, c: u8) -> (err: io.Error) #no_bounds_check {
+write_byte :: #force_inline proc(z: ^Context, c: u8) -> (err: io.Error) #no_bounds_check {
 	c := c;
 	buf := transmute([]u8)mem.Raw_Slice{data=&c, len=1};
 	z.rolling_hash = hash.adler32(buf, z.rolling_hash);
@@ -133,15 +133,15 @@ write_byte :: #force_inline proc(z: ^ZLIB_Context, c: u8) -> (err: io.Error) #no
 	return .None;
 }
 
-allocate_huffman_table :: proc(allocator := context.allocator) -> (z: ^ZLIB_Huffman_Table, err: Error) {
+allocate_huffman_table :: proc(allocator := context.allocator) -> (z: ^Huffman_Table, err: Error) {
 
-	z = new(ZLIB_Huffman_Table, allocator);
+	z = new(Huffman_Table, allocator);
 	return z, E_General.OK;
 }
 
-zlib_build_huffman :: proc(z: ^ZLIB_Huffman_Table, code_lengths: []u8) -> (err: Error) {
-	sizes:     [ZLIB_HUFFMAN_MAX_BITS+1]int;
-	next_code: [ZLIB_HUFFMAN_MAX_BITS]int;
+build_huffman :: proc(z: ^Huffman_Table, code_lengths: []u8) -> (err: Error) {
+	sizes:     [HUFFMAN_MAX_BITS+1]int;
+	next_code: [HUFFMAN_MAX_BITS]int;
 
 	k := int(0);
 
@@ -197,7 +197,7 @@ zlib_build_huffman :: proc(z: ^ZLIB_Huffman_Table, code_lengths: []u8) -> (err: 
 	return E_General.OK;
 }
 
-zlib_decode_huffman_slowpath :: proc(z: ^ZLIB_Context, t: ^ZLIB_Huffman_Table) -> (r: u16, err: Error) #no_bounds_check {
+decode_huffman_slowpath :: proc(z: ^Context, t: ^Huffman_Table) -> (r: u16, err: Error) #no_bounds_check {
 
 	r   = 0;
 	err = E_General.OK;
@@ -209,7 +209,7 @@ zlib_decode_huffman_slowpath :: proc(z: ^ZLIB_Context, t: ^ZLIB_Huffman_Table) -
 
 	k = int(z_bit_reverse(code, 16));
 
-	#no_bounds_check for s = ZLIB_HUFFMAN_FAST_BITS+1; ; {
+	#no_bounds_check for s = HUFFMAN_FAST_BITS+1; ; {
 		if k < t.maxcode[s] {
 			break;
 		}
@@ -233,7 +233,7 @@ zlib_decode_huffman_slowpath :: proc(z: ^ZLIB_Context, t: ^ZLIB_Huffman_Table) -
    	return r, E_General.OK;
 }
 
-zlib_decode_huffman :: proc(z: ^ZLIB_Context, t: ^ZLIB_Huffman_Table) -> (r: u16, err: Error) #no_bounds_check {
+decode_huffman :: proc(z: ^Context, t: ^Huffman_Table) -> (r: u16, err: Error) #no_bounds_check {
 
 	if z.num_bits < 16 {
 		if z.num_bits == -100 {
@@ -250,13 +250,13 @@ zlib_decode_huffman :: proc(z: ^ZLIB_Context, t: ^ZLIB_Huffman_Table) -> (r: u16
 		common.consume_bits_lsb(z, s);
 		return b & 511, E_General.OK;
 	}
-	return zlib_decode_huffman_slowpath(z, t);
+	return decode_huffman_slowpath(z, t);
 }
 
-parse_huffman_block :: proc(z: ^ZLIB_Context, z_repeat, z_offset: ^ZLIB_Huffman_Table) -> (err: Error) #no_bounds_check {
+parse_huffman_block :: proc(z: ^Context, z_repeat, z_offset: ^Huffman_Table) -> (err: Error) #no_bounds_check {
 
 	#no_bounds_check for {
-		value, e := zlib_decode_huffman(z, z_repeat);
+		value, e := decode_huffman(z, z_repeat);
 		if !is_kind(e, E_General.OK) {
 			return err;
 		}
@@ -277,7 +277,7 @@ parse_huffman_block :: proc(z: ^ZLIB_Context, z_repeat, z_offset: ^ZLIB_Huffman_
 				length += u16(common.read_bits_lsb(z, Z_LENGTH_EXTRA[value]));
 			}
 
-			value, e = zlib_decode_huffman(z, z_offset);
+			value, e = decode_huffman(z, z_offset);
 			if !is_kind(e, E_General.OK) {
 				return E_Deflate.Bad_Huffman_Code;
 			}
@@ -329,7 +329,7 @@ parse_huffman_block :: proc(z: ^ZLIB_Context, z_repeat, z_offset: ^ZLIB_Huffman_
 	}
 }
 
-inflate_from_stream :: proc(using ctx: ^ZLIB_Context, raw := false, allocator := context.allocator) -> (err: Error) #no_bounds_check {
+inflate_from_stream :: proc(using ctx: ^Context, raw := false, allocator := context.allocator) -> (err: Error) #no_bounds_check {
 	/*
 		ctx.input must be an io.Stream backed by an implementation that supports:
 		- read
@@ -350,7 +350,7 @@ inflate_from_stream :: proc(using ctx: ^ZLIB_Context, raw := false, allocator :=
 
 		cmf, _ := common.read_u8(ctx);
 
-		method := ZLIB_Compression_Method(cmf & 0xf);
+		method := Compression_Method(cmf & 0xf);
 		if method != .DEFLATE {
 			return E_General.Unknown_Compression_Method;
 		}
@@ -378,7 +378,7 @@ inflate_from_stream :: proc(using ctx: ^ZLIB_Context, raw := false, allocator :=
 			return E_ZLIB.FDICT_Unsupported;
 		}
 
-		// flevel  := ZLIB_Compression_Level((flg >> 6) & 3);
+		// flevel  := Compression_Level((flg >> 6) & 3);
 		/*
 			Inflate can consume bits belonging to the Adler checksum.
 			We pass the entire stream to Inflate and will unget bytes if we need to
@@ -398,8 +398,8 @@ inflate_from_stream :: proc(using ctx: ^ZLIB_Context, raw := false, allocator :=
 	if !raw {
 		common.discard_to_next_byte_lsb(ctx);
 
-		zlib_adler32 := common.read_bits_lsb(ctx, 8) << 24 | common.read_bits_lsb(ctx, 8) << 16 | common.read_bits_lsb(ctx, 8) << 8 | common.read_bits_lsb(ctx, 8);
-		if ctx.rolling_hash != u32(zlib_adler32) {
+		adler32 := common.read_bits_lsb(ctx, 8) << 24 | common.read_bits_lsb(ctx, 8) << 16 | common.read_bits_lsb(ctx, 8) << 8 | common.read_bits_lsb(ctx, 8);
+		if ctx.rolling_hash != u32(adler32) {
 			return E_General.Checksum_Failed;
 		}
 	}
@@ -407,16 +407,16 @@ inflate_from_stream :: proc(using ctx: ^ZLIB_Context, raw := false, allocator :=
 }
 
 // @(optimization_mode="speed")
-inflate_from_stream_raw :: proc(z: ^ZLIB_Context, allocator := context.allocator) -> (err: Error) #no_bounds_check {
+inflate_from_stream_raw :: proc(z: ^Context, allocator := context.allocator) -> (err: Error) #no_bounds_check {
 	final := u32(0);
 	type := u32(0);
 
 	z.num_bits = 0;
 	z.code_buffer = 0;
 
-	z_repeat:      ^ZLIB_Huffman_Table;
-	z_offset:      ^ZLIB_Huffman_Table;
-	codelength_ht: ^ZLIB_Huffman_Table;
+	z_repeat:      ^Huffman_Table;
+	z_offset:      ^Huffman_Table;
+	codelength_ht: ^Huffman_Table;
 
 	z_repeat, err = allocate_huffman_table(allocator=context.allocator);
 	if !is_kind(err, E_General.OK) {
@@ -477,11 +477,11 @@ inflate_from_stream_raw :: proc(z: ^ZLIB_Context, allocator := context.allocator
 			// log.debugf("Err: %v | Final: %v | Type: %v\n", err, final, type);
 			if type == 1 {
 				// Use fixed code lengths.
-				err = zlib_build_huffman(z_repeat, Z_FIXED_LENGTH[:]);
+				err = build_huffman(z_repeat, Z_FIXED_LENGTH[:]);
 				if !is_kind(err, E_General.OK) {
 					return err;
 				}
-				err = zlib_build_huffman(z_offset, Z_FIXED_DIST[:]);
+				err = build_huffman(z_offset, Z_FIXED_DIST[:]);
 				if !is_kind(err, E_General.OK) {
 					return err;
 				}
@@ -502,7 +502,7 @@ inflate_from_stream_raw :: proc(z: ^ZLIB_Context, allocator := context.allocator
 					s := common.read_bits_lsb(z, 3);
 					codelength_sizes[Z_LENGTH_DEZIGZAG[i]] = u8(s);
 				}
-				err = zlib_build_huffman(codelength_ht, codelength_sizes[:]);
+				err = build_huffman(codelength_ht, codelength_sizes[:]);
 				if !is_kind(err, E_General.OK) {
 					return err;
 				}
@@ -511,7 +511,7 @@ inflate_from_stream_raw :: proc(z: ^ZLIB_Context, allocator := context.allocator
 				c: u16;
 
 				for n < ntot {
-					c, err = zlib_decode_huffman(z, codelength_ht);
+					c, err = decode_huffman(z, codelength_ht);
 					if !is_kind(err, E_General.OK) {
 						return err;
 					}
@@ -554,12 +554,12 @@ inflate_from_stream_raw :: proc(z: ^ZLIB_Context, allocator := context.allocator
 			   		return E_Deflate.Huffman_Bad_Code_Lengths;
 			   	}
 
-				err = zlib_build_huffman(z_repeat, lencodes[:hlit]);
+				err = build_huffman(z_repeat, lencodes[:hlit]);
 				if !is_kind(err, E_General.OK) {
 					return err;
 				}
 
-				err = zlib_build_huffman(z_offset, lencodes[hlit:ntot]);
+				err = build_huffman(z_offset, lencodes[hlit:ntot]);
 				if !is_kind(err, E_General.OK) {
 					return err;
 				}
@@ -578,7 +578,7 @@ inflate_from_stream_raw :: proc(z: ^ZLIB_Context, allocator := context.allocator
 }
 
 inflate_from_byte_array :: proc(input: ^[]u8, buf: ^bytes.Buffer, raw := false) -> (err: Error) {
-	ctx := ZLIB_Context{};
+	ctx := Context{};
 
 	r := bytes.Reader{};
 	bytes.reader_init(&r, input^);

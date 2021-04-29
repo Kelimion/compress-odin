@@ -17,21 +17,21 @@ import "core:hash"
 
 */
 
-GZIP_Magic :: enum u16le {
+Magic :: enum u16le {
 	GZIP = 0x8b << 8 | 0x1f,
 }
 
-GZIP_Header :: struct #packed {
-	magic: GZIP_Magic,
-	compression_method: GZIP_Compression,
-	flags: GZIP_Header_Flags,
+Header :: struct #packed {
+	magic: Magic,
+	compression_method: Compression,
+	flags: Header_Flags,
 	modification_time: u32le,
-	xfl: GZIP_Compression_Flags,
-	os: GZIP_OS,
+	xfl: Compression_Flags,
+	os: OS,
 }
-#assert(size_of(GZIP_Header) == 10);
+#assert(size_of(Header) == 10);
 
-GZIP_Header_Flag :: enum u8 {
+Header_Flag :: enum u8 {
 	// Order is important
 	text       = 0,
 	header_crc = 1,
@@ -42,9 +42,9 @@ GZIP_Header_Flag :: enum u8 {
 	reserved_2 = 6,
 	reserved_3 = 7,
 }
-GZIP_Header_Flags :: distinct bit_set[GZIP_Header_Flag; u8];
+Header_Flags :: distinct bit_set[Header_Flag; u8];
 
-GZIP_OS :: enum u8 {
+OS :: enum u8 {
 	FAT = 0,
 	Amiga = 1,
 	VMS = 2,
@@ -62,7 +62,7 @@ GZIP_OS :: enum u8 {
 	_Unknown = 14,
 	Unknown = 255,
 }
-GZIP_OS_Name :: #partial [GZIP_OS]string{
+OS_Name :: #partial [OS]string{
 	.FAT   = "FAT",
 	.Amiga = "Amiga",
 	.VMS   = "VMS/OpenVMS",
@@ -80,11 +80,11 @@ GZIP_OS_Name :: #partial [GZIP_OS]string{
 	.Unknown = "Unknown",
 };
 
-GZIP_Compression :: enum u8 {
+Compression :: enum u8 {
 	DEFLATE = 8,
 }
 
-GZIP_Compression_Flags :: enum u8 {
+Compression_Flags :: enum u8 {
 	Maximum_Compression = 2,
 	Fastest_Compression = 4,
 }
@@ -99,7 +99,7 @@ is_kind   :: common.is_kind;
 
 // Small GZIP file with fextra, fname and fcomment present.
 @private
-GZIP_TEST: []u8 = {
+TEST: []u8 = {
 	0x1f, 0x8b, 0x08, 0x1c, 0xcb, 0x3b, 0x3a, 0x5a,
 	0x02, 0x03, 0x07, 0x00, 0x61, 0x62, 0x03, 0x00,
 	0x63, 0x64, 0x65, 0x66, 0x69, 0x6c, 0x65, 0x6e,
@@ -110,28 +110,28 @@ GZIP_TEST: []u8 = {
 	0x6a, 0x2c, 0x42, 0x07, 0x00, 0x00, 0x00,
 };
 
-load_gzip_from_slice :: proc(slice: ^[]u8, buf: ^bytes.Buffer, allocator := context.allocator) -> (err: Error) {
+load_from_slice :: proc(slice: ^[]u8, buf: ^bytes.Buffer, allocator := context.allocator) -> (err: Error) {
 
 	r := bytes.Reader{};
 	bytes.reader_init(&r, slice^);
 	stream := bytes.reader_to_stream(&r);
 
-	err = load_gzip_from_stream(&stream, buf, allocator);
+	err = load_from_stream(&stream, buf, allocator);
 
 	return err;
 }
 
-load_gzip_from_file :: proc(filename: string, buf: ^bytes.Buffer, allocator := context.allocator) -> (err: Error) {
+load_from_file :: proc(filename: string, buf: ^bytes.Buffer, allocator := context.allocator) -> (err: Error) {
 	data, ok := os.read_entire_file(filename, context.temp_allocator);
 	if ok {
-		err = load_gzip_from_slice(&data, buf, allocator);
+		err = load_from_slice(&data, buf, allocator);
 		return;
 	} else {
 		return E_General.File_Not_Found;
 	}
 }
 
-load_gzip_from_stream :: proc(stream: ^io.Stream, buf: ^bytes.Buffer, allocator := context.allocator) -> (err: Error) {
+load_from_stream :: proc(stream: ^io.Stream, buf: ^bytes.Buffer, allocator := context.allocator) -> (err: Error) {
 
 	ctx := common.Context{
 		input  = stream^,
@@ -140,7 +140,7 @@ load_gzip_from_stream :: proc(stream: ^io.Stream, buf: ^bytes.Buffer, allocator 
 	ws := bytes.buffer_to_stream(buf);
 	ctx.output = ws;
 
-	header, e := common.read_data(&ctx, GZIP_Header);
+	header, e := common.read_data(&ctx, Header);
 	if e != .None {
 		return E_General.File_Too_Short;
 	}
@@ -165,7 +165,7 @@ load_gzip_from_stream :: proc(stream: ^io.Stream, buf: ^bytes.Buffer, allocator 
 	// printf("flags: %v\n", header.flags);
 	// printf("modification time: %v\n", time.unix(i64(header.modification_time), 0));
 	// printf("xfl: %v (%v)\n", header.xfl, int(header.xfl));
-	// printf("os: %v\n", GZIP_OS_Name[header.os]);
+	// printf("os: %v\n", OS_Name[header.os]);
 
 	if .extra in header.flags {
 		xlen, e_extra := common.read_data(&ctx, u16le);
@@ -324,3 +324,5 @@ load_gzip_from_stream :: proc(stream: ^io.Stream, buf: ^bytes.Buffer, allocator 
 	}
 	return E_General.OK;
 }
+
+load :: proc{load_from_file, load_from_slice, load_from_stream};
