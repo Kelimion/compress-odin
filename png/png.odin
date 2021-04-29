@@ -11,8 +11,6 @@ import "core:io"
 import "core:mem"
 import "core:intrinsics"
 
-import "core:fmt"
-
 Image_Option  :: common.Image_Option;
 Image_Options :: common.Image_Options;
 Image         :: common.Image;
@@ -723,9 +721,6 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 		will become the default.
 	*/
 
-	fmt.printf("header:\n\t%v\n", header );
-	fmt.printf("options:\n\t%v\n", options);
-
 	raw_image_channels := img.channels;
 	out_image_channels := 3;
 
@@ -1076,7 +1071,6 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 					o = o[out_image_channels:];
 				}
 			case 3:
-				fmt.printf("Here..\n");
 				// Color without Alpha. We may still have a tRNS chunk
 				key: []u8;
 				if seen_trns {
