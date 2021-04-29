@@ -2,7 +2,7 @@ package png
 
 import "../common"
 import "../zlib"
-import "core:time"
+import coretime "core:time"
 import "core:strings"
 import "core:bytes"
 import "core:mem"
@@ -12,11 +12,12 @@ import "core:mem"
 */
 
 /*
-	Cleanup of image-specific data. For cleanup of PNG chunk helpers, see png_helpers.odin.
+	Cleanup of image-specific data.
+	There are other helpers for cleanup of PNG-specific data.
 	Those are named *_destroy, where * is the name of the helper.
 */
 
-png_destroy :: proc(img: ^Image) {
+destroy :: proc(img: ^Image) {
 	if img == nil {
 		/*
 			Nothing to do.
@@ -30,7 +31,7 @@ png_destroy :: proc(img: ^Image) {
 		We don't need to do anything for the individual chunks.
 		They're allocated on the temp allocator, as is info.chunks
 
-		See png_read_chunk.
+		See read_chunk.
 	*/
 	free(img);
 }
@@ -39,9 +40,9 @@ png_destroy :: proc(img: ^Image) {
 	Chunk helpers
 */
 
-png_gamma :: proc(c: PNG_Chunk) -> f32 {
+gamma :: proc(c: Chunk) -> f32 {
 	assert(c.header.type == .gAMA);
-	res := (^PNG_gAMA)(raw_data(c.data))^;
+	res := (^gAMA)(raw_data(c.data))^;
 	when true {
 		// Returns the wrong result on old backend
 		// Fixed for -llvm-api
@@ -53,32 +54,31 @@ png_gamma :: proc(c: PNG_Chunk) -> f32 {
 
 INCHES_PER_METER :: 1000.0 / 25.4;
 
-png_phys :: proc(c: PNG_Chunk) -> PNG_pHYs {
+phys :: proc(c: Chunk) -> pHYs {
 	assert(c.header.type == .pHYs);
-	res := (^PNG_pHYs)(raw_data(c.data))^;
+	res := (^pHYs)(raw_data(c.data))^;
 	return res;
 }
 
-png_phys_to_dpi :: proc(p: PNG_pHYs) -> (x_dpi, y_dpi: f32) {
+phys_to_dpi :: proc(p: pHYs) -> (x_dpi, y_dpi: f32) {
 	return f32(p.ppu_x) / INCHES_PER_METER, f32(p.ppu_y) / INCHES_PER_METER;
 }
 
-png_time :: proc(c: PNG_Chunk) -> PNG_tIME {
+time :: proc(c: Chunk) -> tIME {
 	assert(c.header.type == .tIME);
-	res := (^PNG_tIME)(raw_data(c.data))^;
+	res := (^tIME)(raw_data(c.data))^;
 	return res;
 }
 
-png_time_to_time :: proc(c: PNG_Chunk) -> (t: time.Time, ok: bool) {
-	png_time := png_time(c);
+core_time :: proc(c: Chunk) -> (t: coretime.Time, ok: bool) {
+	png_time := time(c);
 	using png_time;
-
-	return time.datetime_to_time(
+	return coretime.datetime_to_time(
 		int(year), int(month), int(day),
 		int(hour), int(minute), int(second));
 }
 
-png_text :: proc(c: PNG_Chunk) -> (res: PNG_Text, ok: bool) {
+text :: proc(c: Chunk) -> (res: Text, ok: bool) {
 	 #partial switch c.header.type {
 		case .tEXt:
 			ok = true;
@@ -174,14 +174,14 @@ png_text :: proc(c: PNG_Chunk) -> (res: PNG_Text, ok: bool) {
 	}
 }
 
-png_text_destroy :: proc(text: PNG_Text) {
+text_destroy :: proc(text: Text) {
 	delete(text.keyword);
 	delete(text.keyword_localized);
 	delete(text.language);
 	delete(text.text);
 }
 
-png_iccp :: proc(c: PNG_Chunk) -> (res: PNG_iCCP, ok: bool) {
+iccp :: proc(c: Chunk) -> (res: iCCP, ok: bool) {
 	ok = true;
 
 	fields := bytes.split_n(s=c.data, sep=[]u8{0}, n=3, allocator=context.temp_allocator);
@@ -210,28 +210,28 @@ png_iccp :: proc(c: PNG_Chunk) -> (res: PNG_iCCP, ok: bool) {
 	return;
 }
 
-png_iccp_destroy :: proc(i: PNG_iCCP) {
+iccp_destroy :: proc(i: iCCP) {
 	delete(i.name);
 
 	delete(i.profile);
 
 }
 
-png_srgb :: proc(c: PNG_Chunk) -> (res: PNG_sRGB, ok: bool) {
+srgb :: proc(c: Chunk) -> (res: sRGB, ok: bool) {
 	ok = true;
 
 	if c.header.type != .sRGB || len(c.data) != 1 {
 		return {}, false;
 	}
 
-	res.intent = PNG_sRGB_Rendering_Intent(c.data[0]);
-	if res.intent > max(PNG_sRGB_Rendering_Intent) {
+	res.intent = sRGB_Rendering_Intent(c.data[0]);
+	if res.intent > max(sRGB_Rendering_Intent) {
 		ok = false; return;
 	}
 	return;
 }
 
-png_plte :: proc(c: PNG_Chunk) -> (res: PNG_PLTE, ok: bool) {
+plte :: proc(c: Chunk) -> (res: PLTE, ok: bool) {
 	if c.header.type != .PLTE {
 		return {}, false;
 	}
@@ -245,7 +245,7 @@ png_plte :: proc(c: PNG_Chunk) -> (res: PNG_PLTE, ok: bool) {
 	return;
 }
 
-png_splt :: proc(c: PNG_Chunk) -> (res: PNG_sPLT, ok: bool) {
+splt :: proc(c: Chunk) -> (res: sPLT, ok: bool) {
 	if c.header.type != .sPLT {
 		return {}, false;
 	}
@@ -292,11 +292,11 @@ png_splt :: proc(c: PNG_Chunk) -> (res: PNG_sPLT, ok: bool) {
 	return;
 }
 
-png_splt_destroy :: proc(s: PNG_sPLT) {
+splt_destroy :: proc(s: sPLT) {
 	delete(s.name);
 }
 
-png_sbit :: proc(c: PNG_Chunk) -> (res: [4]u8, ok: bool) {
+sbit :: proc(c: Chunk) -> (res: [4]u8, ok: bool) {
 	/*
 		Returns [4]u8 with the significant bits in each channel.
 		A channel will contain zero if not applicable to the PNG color type.
@@ -314,7 +314,7 @@ png_sbit :: proc(c: PNG_Chunk) -> (res: [4]u8, ok: bool) {
 
 }
 
-png_hist :: proc(c: PNG_Chunk) -> (res: PNG_hIST, ok: bool) {
+hist :: proc(c: Chunk) -> (res: hIST, ok: bool) {
 	if c.header.type != .hIST {
 		return {}, false;
 	}
@@ -336,12 +336,12 @@ png_hist :: proc(c: PNG_Chunk) -> (res: PNG_hIST, ok: bool) {
 	return;
 }
 
-png_chrm :: proc(c: PNG_Chunk) -> (res: PNG_cHRM, ok: bool) {
+chrm :: proc(c: Chunk) -> (res: cHRM, ok: bool) {
 	ok = true;
-	if c.header.length != size_of(PNG_cHRM_Raw) {
+	if c.header.length != size_of(cHRM_Raw) {
 		return {}, false;
 	}
-	chrm := (^PNG_cHRM_Raw)(raw_data(c.data))^;
+	chrm := (^cHRM_Raw)(raw_data(c.data))^;
 
 	res.w.x = f32(chrm.w.x) / 100_000.0;
 	res.w.y = f32(chrm.w.y) / 100_000.0;
@@ -354,7 +354,7 @@ png_chrm :: proc(c: PNG_Chunk) -> (res: PNG_cHRM, ok: bool) {
 	return;
 }
 
-png_exif :: proc(c: PNG_Chunk) -> (res: PNG_Exif, ok: bool) {
+exif :: proc(c: Chunk) -> (res: Exif, ok: bool) {
 
 	ok = true;
 
@@ -392,7 +392,7 @@ compute_buffer_size :: common.compute_buffer_size;
 
 when false {
 
-	make_png_chunk :: proc(c: any, t: PNG_Chunk_Type) -> (res: PNG_Chunk) {
+	make_chunk :: proc(c: any, t: Chunk_Type) -> (res: Chunk) {
 
 		data: []u8;
 		if v, ok := c.([]u8); ok {
@@ -412,7 +412,7 @@ when false {
 		return;
 	}
 
-	write_png_chunk :: proc(fd: os.Handle, chunk: PNG_Chunk) {
+	write_chunk :: proc(fd: os.Handle, chunk: Chunk) {
 		c := chunk;
 		// Write length + type
 		os.write_ptr(fd, &c.header, 8);
@@ -444,11 +444,11 @@ when false {
 		}
 		defer close(fd);
 
-		png_magic := PNG_Signature;
+		magic := Signature;
 
-		write_ptr(fd, &png_magic, 8);
+		write_ptr(fd, &magic, 8);
 
-		ihdr := PNG_IHDR{
+		ihdr := IHDR{
 			width              = u32be(width),
 			height             = u32be(height),
 			bit_depth          = depth,
@@ -458,20 +458,20 @@ when false {
 		};
 
 		if channels == 1 {
-			ihdr.color_type = PNG_Color_Type{};
+			ihdr.color_type = Color_Type{};
 		} else if channels == 2 {
-			ihdr.color_type = PNG_Color_Type{.Alpha};
+			ihdr.color_type = Color_Type{.Alpha};
 		} else if channels == 3 {
-			ihdr.color_type = PNG_Color_Type{.Color};
+			ihdr.color_type = Color_Type{.Color};
 		} else if channels == 4 {
-			ihdr.color_type = PNG_Color_Type{.Color, .Alpha};
+			ihdr.color_type = Color_Type{.Color, .Alpha};
 		} else {
 			// Unhandled
 			return E_PNG.Unknown_Color_Type;
 		}
 
-		h := make_png_chunk(ihdr, .IHDR);
-		write_png_chunk(fd, h);
+		h := make_chunk(ihdr, .IHDR);
+		write_chunk(fd, h);
 
 		bytes_needed := width * height * int(channels) + height;
 		filter_bytes := mem.make_dynamic_array_len_cap([dynamic]u8, bytes_needed, bytes_needed, context.allocator);
@@ -508,12 +508,12 @@ when false {
 			return err;
 		}
 
-		idat := make_png_chunk(b, .IDAT);
+		idat := make_chunk(b, .IDAT);
 
-		write_png_chunk(fd, idat);
+		write_chunk(fd, idat);
 
-		iend := make_png_chunk([]u8{}, .IEND);
-		write_png_chunk(fd, iend);
+		iend := make_chunk([]u8{}, .IEND);
+		write_chunk(fd, iend);
 
 		return E_General.OK;
 	}

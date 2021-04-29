@@ -38,33 +38,33 @@ main :: proc() {
 
 	file = fmt.tprintf("../../test/%v.png", file);
 
-	img, err = png.load_png(file, options);
-	defer png.png_destroy(img);
+	img, err = png.load(file, options);
+	defer png.destroy(img);
 
 	if !png.is_kind(err, png.E_General.OK) {
 		fmt.printf("Trying to read PNG file %v returned %v\n", file, err);
 	} else {
-		v:  png.PNG_Info;
+		v:  png.Info;
 		ok: bool;
 
 		fmt.printf("Image: %vx%vx%v, %v-bit.\n", img.width, img.height, img.channels, img.depth);
 
-		if v, ok = img.sidecar.(png.PNG_Info); ok {
+		if v, ok = img.sidecar.(png.Info); ok {
 			// Handle ancillary chunks as you wish.
 			// We provide helper functions for a few types.
 			for c in v.chunks {
 				#partial switch (c.header.type) {
 					case .tIME:
-						t, _ := png.png_time_to_time(c);
+						t, _ := png.core_time(c);
 						fmt.printf("[tIME]: %v\n", t);
 					case .gAMA:
-						fmt.printf("[gAMA]: %v\n", png.png_gamma(c));
+						fmt.printf("[gAMA]: %v\n", png.gamma(c));
 					case .pHYs:
-						phys := png.png_phys(c);
+						phys := png.phys(c);
 						if phys.unit == .Meter {
 							xm    := f32(img.width)  / f32(phys.ppu_x);
 							ym    := f32(img.height) / f32(phys.ppu_y);
-							dpi_x, dpi_y := png.png_phys_to_dpi(phys);
+							dpi_x, dpi_y := png.phys_to_dpi(phys);
 							fmt.printf("[pHYs] Image resolution is %v x %v pixels per meter.\n", phys.ppu_x, phys.ppu_y);
 							fmt.printf("[pHYs] Image resolution is %v x %v DPI.\n", dpi_x, dpi_y);
 							fmt.printf("[pHYs] Image dimensions are %v x %v meters.\n", xm, ym);
@@ -72,7 +72,7 @@ main :: proc() {
 							fmt.printf("[pHYs] x: %v, y: %v pixels per unknown unit.\n", phys.ppu_x, phys.ppu_y);
 						}
 					case .iTXt, .zTXt, .tEXt:
-						res, ok_text := png.png_text(c);
+						res, ok_text := png.text(c);
 						if ok_text {
 							if c.header.type == .iTXt {
 								fmt.printf("[iTXt] %v (%v:%v): %v\n", res.keyword, res.language, res.keyword_localized, res.text);
@@ -80,11 +80,11 @@ main :: proc() {
 								fmt.printf("[tEXt/zTXt] %v: %v\n", res.keyword, res.text);
 							}
 						}
-						defer png.png_text_destroy(res);
+						defer png.text_destroy(res);
 					case .bKGD:
 						fmt.printf("[bKGD] %v\n", img.background);
 					case .eXIf:
-						res, ok_exif := png.png_exif(c);
+						res, ok_exif := png.exif(c);
 						if ok_exif {
 							/*
 								Other than checking the signature and byte order, we don't handle Exif data.
@@ -93,40 +93,40 @@ main :: proc() {
 							fmt.printf("[eXIf] %v\n", res);
 						}
 					case .PLTE:
-						plte, plte_ok := png.png_plte(c);
+						plte, plte_ok := png.plte(c);
 						if plte_ok {
 							fmt.printf("[PLTE] %v\n", plte);
 						} else {
 							fmt.printf("[PLTE] Error\n");
 						}
 					case .hIST:
-						res, ok_hist := png.png_hist(c);
+						res, ok_hist := png.hist(c);
 						if ok_hist {
 							fmt.printf("[hIST] %v\n", res);
 						}
 					case .cHRM:
-						res, ok_chrm := png.png_chrm(c);
+						res, ok_chrm := png.chrm(c);
 						if ok_chrm {
 							fmt.printf("[cHRM] %v\n", res);
 						}
 					case .sPLT:
-						res, ok_splt := png.png_splt(c);
+						res, ok_splt := png.splt(c);
 						if ok_splt {
 							fmt.printf("[sPLT] %v\n", res);
 						}
-						png.png_splt_destroy(res);
+						png.splt_destroy(res);
 					case .sBIT:
-						if res, ok_sbit := png.png_sbit(c); ok_sbit {
+						if res, ok_sbit := png.sbit(c); ok_sbit {
 							fmt.printf("[sBIT] %v\n", res);
 						}
 					case .iCCP:
-						res, ok_iccp := png.png_iccp(c);
+						res, ok_iccp := png.iccp(c);
 						if ok_iccp {
 							fmt.printf("[iCCP] %v\n", res);
 						}
-						png.png_iccp_destroy(res);
+						png.iccp_destroy(res);
 					case .sRGB:
-						if res, ok_srgb := png.png_srgb(c); ok_srgb {
+						if res, ok_srgb := png.srgb(c); ok_srgb {
 							fmt.printf("[sRGB] Rendering intent: %v\n", res);
 						}
 					case:

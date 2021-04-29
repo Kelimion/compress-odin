@@ -21,28 +21,28 @@ E_PNG     :: common.PNG_Error;
 E_Deflate :: common.Deflate_Error;
 is_kind   :: common.is_kind;
 
-PNG_Signature :: enum u64be {
+Signature :: enum u64be {
 	// 0x89504e470d0a1a0a
 	PNG = 0x89 << 56 | 'P' << 48 | 'N' << 40 | 'G' << 32 | '\r' << 24 | '\n' << 16 | 0x1a << 8 | '\n',
 }
 
-PNG_Info :: struct {
-	header: PNG_IHDR,
-	chunks: [dynamic]PNG_Chunk,
+Info :: struct {
+	header: IHDR,
+	chunks: [dynamic]Chunk,
 }
 
-PNG_Chunk_Header :: struct #packed {
+Chunk_Header :: struct #packed {
 	length: u32be,
-	type:   PNG_Chunk_Type,
+	type:   Chunk_Type,
 }
 
-PNG_Chunk :: struct #packed {
-	header: PNG_Chunk_Header,
+Chunk :: struct #packed {
+	header: Chunk_Header,
 	data:   []byte,
 	crc:    u32be,
 }
 
-PNG_Chunk_Type :: enum u32be {
+Chunk_Type :: enum u32be {
 	// IHDR must come first in a file
 	IHDR = 'I' << 24 | 'H' << 16 | 'D' << 8 | 'R',
 	// PLTE must precede the first IDAT chunk
@@ -91,31 +91,31 @@ PNG_Chunk_Type :: enum u32be {
 	CbGI = 'C' << 24 | 'b' << 16 | 'H' << 8 | 'I',
 }
 
-PNG_IHDR :: struct #packed {
+IHDR :: struct #packed {
 	width: u32be,
 	height: u32be,
 	bit_depth: u8,
-	color_type: PNG_Color_Type,
+	color_type: Color_Type,
 	compression_method: u8,
 	filter_method: u8,
-	interlace_method: PNG_Interlace_Method,
+	interlace_method: Interlace_Method,
 }
-PNG_IHDR_SIZE :: size_of(PNG_IHDR);
-#assert (PNG_IHDR_SIZE == 13);
+IHDR_SIZE :: size_of(IHDR);
+#assert (IHDR_SIZE == 13);
 
-PNG_Color_Value :: enum u8 {
+Color_Value :: enum u8 {
 	Paletted = 0, // 1 << 0 = 1
 	Color    = 1, // 1 << 1 = 2
 	Alpha    = 2, // 1 << 2 = 4
 }
-PNG_Color_Type :: distinct bit_set[PNG_Color_Value; u8];
+Color_Type :: distinct bit_set[Color_Value; u8];
 
-PNG_Interlace_Method :: enum u8 {
+Interlace_Method :: enum u8 {
 	None  = 0,
 	Adam7 = 1,
 }
 
-PNG_Row_Filter :: enum u8 {
+Row_Filter :: enum u8 {
    None    = 0,
    Sub     = 1,
    Up      = 2,
@@ -123,19 +123,19 @@ PNG_Row_Filter :: enum u8 {
    Paeth   = 4,
 };
 
-PNG_PLTE_Entry    :: [3]u8;
+PLTE_Entry    :: [3]u8;
 
-PNG_PLTE :: struct #packed {
-	entries: [256]PNG_PLTE_Entry,
+PLTE :: struct #packed {
+	entries: [256]PLTE_Entry,
 	used: u16,
 }
 
-PNG_hIST :: struct #packed {
+hIST :: struct #packed {
 	entries: [256]u16,
 	used: u16,
 }
 
-PNG_sPLT :: struct #packed {
+sPLT :: struct #packed {
 	name: string,
 	depth: u8,
 	entries: union {
@@ -146,7 +146,7 @@ PNG_sPLT :: struct #packed {
 }
 
 // Other chunks
-PNG_tIME :: struct #packed {
+tIME :: struct #packed {
 	year:   u16be,
 	month:  u8,
 	day:    u8,
@@ -154,7 +154,7 @@ PNG_tIME :: struct #packed {
 	minute: u8,
 	second: u8,
 };
-#assert(size_of(PNG_tIME) == 7);
+#assert(size_of(tIME) == 7);
 
 CIE_1931_Raw :: struct #packed {
 	x: u32be,
@@ -166,47 +166,47 @@ CIE_1931 :: struct #packed {
 	y: f32,
 }
 
-PNG_cHRM_Raw :: struct #packed {
+cHRM_Raw :: struct #packed {
    w: CIE_1931_Raw,
    r: CIE_1931_Raw,
    g: CIE_1931_Raw,
    b: CIE_1931_Raw,
 }
-#assert(size_of(PNG_cHRM_Raw) == 32);
+#assert(size_of(cHRM_Raw) == 32);
 
-PNG_cHRM :: struct #packed {
+cHRM :: struct #packed {
    w: CIE_1931,
    r: CIE_1931,
    g: CIE_1931,
    b: CIE_1931,
 }
-#assert(size_of(PNG_cHRM) == 32);
+#assert(size_of(cHRM) == 32);
 
-PNG_gAMA :: struct {
+gAMA :: struct {
 	gamma_100k: u32be, // Gamma * 100k
 };
-#assert(size_of(PNG_gAMA) == 4);
+#assert(size_of(gAMA) == 4);
 
-PNG_pHYs :: struct #packed {
+pHYs :: struct #packed {
 	ppu_x: u32be,
 	ppu_y: u32be,
 	unit:  pHYs_Unit,
 };
-#assert(size_of(PNG_pHYs) == 9);
+#assert(size_of(pHYs) == 9);
 
 pHYs_Unit :: enum u8 {
 	Unknown = 0,
 	Meter   = 1,
 };
 
-PNG_Text :: struct {
+Text :: struct {
 	keyword:           string,
 	keyword_localized: string,
 	language:          string,
 	text:              string,
 };
 
-PNG_Exif :: struct {
+Exif :: struct {
 	byte_order: enum {
 		little_endian,
 		big_endian,
@@ -214,20 +214,20 @@ PNG_Exif :: struct {
 	data: []u8,
 }
 
-PNG_iCCP :: struct {
+iCCP :: struct {
 	name: string,
 	profile: []u8,
 }
 
-PNG_sRGB_Rendering_Intent :: enum u8 {
+sRGB_Rendering_Intent :: enum u8 {
 	Perceptual = 0,
 	Relative_colorimetric = 1,
 	Saturation = 2,
 	Absolute_colorimetric = 3,
 }
 
-PNG_sRGB :: struct #packed {
-	intent: PNG_sRGB_Rendering_Intent,
+sRGB :: struct #packed {
+	intent: sRGB_Rendering_Intent,
 }
 
 ADAM7_X_ORIG    := []int{ 0,4,0,2,0,1,0 };
@@ -237,11 +237,11 @@ ADAM7_Y_SPACING := []int{ 8,8,8,4,4,2,2 };
 
 // Implementation starts here
 
-png_read_chunk :: proc(ctx: ^common.Context) -> (PNG_Chunk, Error) {
+read_chunk :: proc(ctx: ^common.Context) -> (Chunk, Error) {
 
-	chunk := PNG_Chunk{};
+	chunk := Chunk{};
 
-	ch, e := common.read_data(ctx, PNG_Chunk_Header);
+	ch, e := common.read_data(ctx, Chunk_Header);
 	if e != .None {
 		return {}, E_General.Stream_Too_Short;
 	}
@@ -271,14 +271,14 @@ png_read_chunk :: proc(ctx: ^common.Context) -> (PNG_Chunk, Error) {
 	return chunk, E_General.OK;
 }
 
-png_read_header :: proc(ctx: ^common.Context) -> (PNG_IHDR, Error) {
+read_header :: proc(ctx: ^common.Context) -> (IHDR, Error) {
 
-	c, e := png_read_chunk(ctx);
+	c, e := read_chunk(ctx);
 	if !is_kind(e, E_General.OK) {
 		return {}, e;
 	}
 
-	header := (^PNG_IHDR)(raw_data(c.data))^;
+	header := (^IHDR)(raw_data(c.data))^;
 	// Validate IHDR
 	using header;
 	if width == 0 || height == 0 {
@@ -345,12 +345,12 @@ png_read_header :: proc(ctx: ^common.Context) -> (PNG_IHDR, Error) {
 	return header, E_General.OK;
 }
 
-chunk_type_to_name :: proc(type: ^PNG_Chunk_Type) -> string {
+chunk_type_to_name :: proc(type: ^Chunk_Type) -> string {
 	t := transmute(^u8)type;
 	return strings.string_from_ptr(t, 4);
 }
 
-load_png_from_slice :: proc(slice: ^[]u8, options: Image_Options = {}, allocator := context.allocator) -> (img: ^Image, err: Error) {
+load_from_slice :: proc(slice: ^[]u8, options: Image_Options = {}, allocator := context.allocator) -> (img: ^Image, err: Error) {
 	r := bytes.Reader{};
 	bytes.reader_init(&r, slice^);
 	stream := bytes.reader_to_stream(&r);
@@ -360,26 +360,26 @@ load_png_from_slice :: proc(slice: ^[]u8, options: Image_Options = {}, allocator
 		This way the stream reader could avoid the copy into the temp memory returned by it,
 		and instead return a slice into the original memory that's already owned by the caller.
 	*/
-	img, err = load_png_from_stream(&stream, options, allocator);
+	img, err = load_from_stream(&stream, options, allocator);
 
 	return img, err;
 }
 
-load_png_from_file :: proc(filename: string, options: Image_Options = {}, allocator := context.allocator) -> (img: ^Image, err: Error) {
+load_from_file :: proc(filename: string, options: Image_Options = {}, allocator := context.allocator) -> (img: ^Image, err: Error) {
 	load_file :: proc(filename: string) -> (res: []u8, ok: bool) {
 		return os.read_entire_file(filename, context.temp_allocator);
 	}
 
 	data, ok := load_file(filename);
 	if ok {
-		img, err = load_png_from_slice(&data, options, allocator);
+		img, err = load_from_slice(&data, options, allocator);
 		return;
 	} else {
 		return &Image{}, E_General.File_Not_Found;
 	}
 }
 
-load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, allocator := context.allocator) -> (img: ^Image, err: Error) {
+load_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, allocator := context.allocator) -> (img: ^Image, err: Error) {
 	options := options;
 	if .info in options {
 		options |= {.return_metadata, .do_not_decompress_image};
@@ -397,7 +397,7 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 		input  = stream^,
 	};
 
-	signature, io_error := common.read_data(&ctx, PNG_Signature);
+	signature, io_error := common.read_data(&ctx, Signature);
 	if io_error != .None || signature != .PNG {
 		return img, E_PNG.Invalid_PNG_Signature;
 	}
@@ -407,12 +407,12 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 	idat_length := u32be(0);
 	defer bytes.buffer_destroy(&idat_b);
 
-	c:		PNG_Chunk;
-	ch:     PNG_Chunk_Header;
+	c:		Chunk;
+	ch:     Chunk_Header;
 	e:      io.Error;
 
-	header:	PNG_IHDR;
-	info:   PNG_Info;
+	header:	IHDR;
+	info:   Info;
 	info.chunks.allocator = context.temp_allocator;
 
 	// State to ensure correct chunk ordering.
@@ -423,8 +423,8 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 	seen_idat := false;
 	seen_iend := false;
 
-	plte := PNG_PLTE{};
-	trns := PNG_Chunk{};
+	_plte := PLTE{};
+	trns := Chunk{};
 
 	final_image_channels := 0;
 
@@ -434,7 +434,7 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 		// Peek at next chunk's length and type.
 		// TODO: Some streams may not provide seek/read_at
 
-		ch, e = common.peek_data(&ctx, PNG_Chunk_Header);
+		ch, e = common.peek_data(&ctx, Chunk_Header);
 		if e != .None {
 			return img, E_General.Stream_Too_Short;
 		}
@@ -447,7 +447,7 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 				}
 				seen_ihdr = true;
 
-				header, err = png_read_header(&ctx);
+				header, err = read_header(&ctx);
 				if !is_kind(err, E_General.OK) {
 					return img, err;
 				}
@@ -482,7 +482,7 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 				img.height = int(header.height);
 
 				using header;
-				h := PNG_IHDR{
+				h := IHDR{
 					width              = width,
 					height             = height,
 					bit_depth          = bit_depth,
@@ -500,7 +500,7 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 					return img, E_PNG.PLTE_Encountered_Unexpectedly;
 				}
 
-				c, err = png_read_chunk(&ctx);
+				c, err = read_chunk(&ctx);
 				if !is_kind(err, E_General.OK) {
 					return img, err;
 				}
@@ -509,7 +509,7 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 					return img, E_PNG.PLTE_Invalid_Length;
 				}
 				plte_ok: bool;
-				plte, plte_ok = png_plte(c);
+				_plte, plte_ok = plte(c);
 				if !plte_ok {
 					return img, E_PNG.PLTE_Invalid_Length;
 				}
@@ -535,7 +535,7 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 
 				next := ch.type;
 				for next == .IDAT {
-					c, err = png_read_chunk(&ctx);
+					c, err = read_chunk(&ctx);
 					if !is_kind(err, E_General.OK) {
 						return img, err;
 					}
@@ -543,7 +543,7 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 					bytes.buffer_write(&idat_b, c.data);
 					idat_length += c.header.length;
 
-					ch, e = common.peek_data(&ctx, PNG_Chunk_Header);
+					ch, e = common.peek_data(&ctx, Chunk_Header);
 					if e != .None {
 						return img, E_General.Stream_Too_Short;
 					}
@@ -555,7 +555,7 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 				}
 				seen_idat = true;
 			case .IEND:
-				c, err = png_read_chunk(&ctx);
+				c, err = read_chunk(&ctx);
 				if !is_kind(err, E_General.OK) {
 					return img, err;
 				}
@@ -564,7 +564,7 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 
 				// TODO: Make sure that 16-bit bKGD + tRNS chunks return u16 instead of u16be
 
-				c, err = png_read_chunk(&ctx);
+				c, err = read_chunk(&ctx);
 				if !is_kind(err, E_General.OK) {
 					return img, err;
 				}
@@ -579,7 +579,7 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 						if c.header.length != 1 {
 							return {}, E_PNG.BKGD_Invalid_Length;
 						}
-						col := plte.entries[c.data[0]];
+						col := _plte.entries[c.data[0]];
 						img.background = [3]u16{
 							u16(col[0]) << 8 | u16(col[0]),
 							u16(col[1]) << 8 | u16(col[1]),
@@ -599,7 +599,7 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 						img.background = [3]u16{u16(col[0]), u16(col[1]), u16(col[2])};
 				}
 			case .tRNS:
-				c, err = png_read_chunk(&ctx);
+				c, err = read_chunk(&ctx);
 				if !is_kind(err, E_General.OK) {
 					return img, err;
 				}
@@ -641,7 +641,7 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 				return img, E_PNG.PNG_Does_Not_Adhere_to_Spec;
 			case:
 				// Unhandled type
-				c, err = png_read_chunk(&ctx);
+				c, err = read_chunk(&ctx);
 				if !is_kind(err, E_General.OK) {
 					return img, err;
 				}
@@ -706,7 +706,7 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 		So, we'll save the old value of img.channels we return to the user
 		as metadata, and set it instead to the raw number of channels.
 	*/
-	defilter_error := png_defilter(img, &buf, &header, options);
+	defilter_error := defilter(img, &buf, &header, options);
 	if !is_kind(defilter_error, E_General.OK) {
 		bytes.buffer_destroy(&img.pixels);
 		return {}, defilter_error;
@@ -765,7 +765,7 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 		if (!seen_trns || (seen_trns && .alpha_drop_if_present in options && .alpha_premultiply not_in options)) && .alpha_add_if_missing not_in options {
 			for h := 0; h < int(img.height); h += 1 {
 				for w := 0; w < int(img.width);  w += 1 {
-					c := plte.entries[temp.buf[i]];
+					c := _plte.entries[temp.buf[i]];
 					t.buf[j  ] = c.r;
 					t.buf[j+1] = c.g;
 					t.buf[j+2] = c.b;
@@ -786,7 +786,7 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 				for w := 0; w < int(img.width);  w += 1 {
 					index := temp.buf[i];
 
-					c     := plte.entries[index];
+					c     := _plte.entries[index];
 					a     := int(index) < len(trns.data) ? trns.data[index] : 255;
 					alpha := f32(a) / 255.0;
 
@@ -1163,7 +1163,7 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 }
 
 
-png_filter_paeth :: #force_inline proc(left, up, up_left: u8) -> u8 {
+filter_paeth :: #force_inline proc(left, up, up_left: u8) -> u8 {
 	aa, bb, cc := i16(left), i16(up), i16(up_left);
 	p  := aa + bb - cc;
 	pa := abs(p - aa);
@@ -1178,7 +1178,7 @@ png_filter_paeth :: #force_inline proc(left, up, up_left: u8) -> u8 {
 	return up_left;
 }
 
-PNG_Filter_Params :: struct #packed {
+Filter_Params :: struct #packed {
 	src     : []u8,
 	dest    : []u8,
 	width   : int,
@@ -1191,7 +1191,7 @@ PNG_Filter_Params :: struct #packed {
 depth_scale_table :: []u8{0, 0xff, 0x55, 0, 0x11, 0,0,0, 0x01};
 
 // @(optimization_mode="speed")
-png_defilter_8 :: proc(params: ^PNG_Filter_Params) -> (ok: bool) {
+defilter_8 :: proc(params: ^Filter_Params) -> (ok: bool) {
 
 	using params;
 	row_stride := channels * width;
@@ -1205,7 +1205,7 @@ png_defilter_8 :: proc(params: ^PNG_Filter_Params) -> (ok: bool) {
 	for _ in 0..<height {
 		nk := row_stride - channels;
 
-		filter := PNG_Row_Filter(src[0]); src = src[1:];
+		filter := Row_Filter(src[0]); src = src[1:];
 		// fmt.printf("Row: %v | Filter: %v\n", y, filter);
 		switch(filter) {
 			case .None:
@@ -1232,11 +1232,11 @@ png_defilter_8 :: proc(params: ^PNG_Filter_Params) -> (ok: bool) {
 				}
 			case .Paeth:
 				for i := 0; i < channels; i += 1 {
-					paeth := png_filter_paeth(0, up[i], 0);
+					paeth := filter_paeth(0, up[i], 0);
 					dest[i] = (src[i] + paeth) & 255;
 				}
 				for k := 0; k < nk; k += 1 {
-					paeth := png_filter_paeth(dest[k], up[channels+k], up[k]);
+					paeth := filter_paeth(dest[k], up[channels+k], up[k]);
 					dest[channels+k] = (src[channels+k] + paeth) & 255;
 				}
 			case:
@@ -1251,7 +1251,7 @@ png_defilter_8 :: proc(params: ^PNG_Filter_Params) -> (ok: bool) {
 }
 
 // @(optimization_mode="speed")
-png_defilter_less_than_8 :: proc(params: ^PNG_Filter_Params) -> (ok: bool) #no_bounds_check {
+defilter_less_than_8 :: proc(params: ^Filter_Params) -> (ok: bool) #no_bounds_check {
 
 	using params;
 	ok = true;
@@ -1274,7 +1274,7 @@ png_defilter_less_than_8 :: proc(params: ^PNG_Filter_Params) -> (ok: bool) #no_b
 
 		dest = dest[row_offset:];
 
-		filter := PNG_Row_Filter(src[0]); src = src[1:];
+		filter := Row_Filter(src[0]); src = src[1:];
 		switch(filter) {
 			case .None:
 				copy(dest, src[:row_stride_in]);
@@ -1300,11 +1300,11 @@ png_defilter_less_than_8 :: proc(params: ^PNG_Filter_Params) -> (ok: bool) #no_b
 				}
 			case .Paeth:
 				for i in 0..channels {
-					paeth := png_filter_paeth(0, up[i], 0);
+					paeth := filter_paeth(0, up[i], 0);
 					dest[i] = (src[i] + paeth) & 255;
 				}
 				for k in 0..nk {
-					paeth := png_filter_paeth(dest[k], up[channels], up[k]);
+					paeth := filter_paeth(dest[k], up[channels], up[k]);
 					dest[channels+k] = (src[channels+k] + paeth) & 255;
 				}
 			case:
@@ -1326,7 +1326,7 @@ png_defilter_less_than_8 :: proc(params: ^PNG_Filter_Params) -> (ok: bool) #no_b
 	/*
 		For sBIT support we should probably set scale to 1 and mask the significant bits.
 		Seperately, do we want to support packed pixels? i.e defiltering only, no expansion?
-		If so, all we have to do is call png_defilter_8 for that case and not set img.depth to 8.
+		If so, all we have to do is call defilter_8 for that case and not set img.depth to 8.
 	*/
 
 	for j := 0; j < height; j += 1 {
@@ -1411,7 +1411,7 @@ png_defilter_less_than_8 :: proc(params: ^PNG_Filter_Params) -> (ok: bool) #no_b
 }
 
 // @(optimization_mode="speed")
-png_defilter_16 :: proc(params: ^PNG_Filter_Params) -> (ok: bool) {
+defilter_16 :: proc(params: ^Filter_Params) -> (ok: bool) {
 
 	using params;
 	ok = true;
@@ -1426,7 +1426,7 @@ png_defilter_16 :: proc(params: ^PNG_Filter_Params) -> (ok: bool) {
 	for y := 0; y < height; y += 1 {
 		nk := row_stride - stride;
 
-		filter := PNG_Row_Filter(src[0]); src = src[1:];
+		filter := Row_Filter(src[0]); src = src[1:];
 		switch(filter) {
 			case .None:
 				copy(dest, src[:row_stride]);
@@ -1452,11 +1452,11 @@ png_defilter_16 :: proc(params: ^PNG_Filter_Params) -> (ok: bool) {
 				}
 			case .Paeth:
 				for i := 0; i < stride; i += 1 {
-					paeth := png_filter_paeth(0, up[i], 0);
+					paeth := filter_paeth(0, up[i], 0);
 					dest[i] = (src[i] + paeth) & 255;
 				}
 				for k := 0; k < nk; k += 1 {
-					paeth := png_filter_paeth(dest[k], up[stride+k], up[k]);
+					paeth := filter_paeth(dest[k], up[stride+k], up[k]);
 					dest[stride+k] = (src[stride+k] + paeth) & 255;
 				}
 			case:
@@ -1471,7 +1471,7 @@ png_defilter_16 :: proc(params: ^PNG_Filter_Params) -> (ok: bool) {
 	return;
 }
 
-png_defilter :: proc(img: ^Image, filter_bytes: ^bytes.Buffer, header: ^PNG_IHDR, options: Image_Options) -> (err: common.Compress_Error) {
+defilter :: proc(img: ^Image, filter_bytes: ^bytes.Buffer, header: ^IHDR, options: Image_Options) -> (err: common.Compress_Error) {
 	input    := bytes.buffer_to_bytes(filter_bytes);
 	width    := int(header.width);
 	height   := int(header.height);
@@ -1487,7 +1487,7 @@ png_defilter :: proc(img: ^Image, filter_bytes: ^bytes.Buffer, header: ^PNG_IHDR
 	filter_ok: bool;
 
 	if header.interlace_method != .Adam7 {
-		params := PNG_Filter_Params{
+		params := Filter_Params{
 			src      = input,
 			width    = width,
 			height   = height,
@@ -1498,12 +1498,12 @@ png_defilter :: proc(img: ^Image, filter_bytes: ^bytes.Buffer, header: ^PNG_IHDR
 		};
 
 		if depth == 8 {
-			filter_ok = png_defilter_8(&params);
+			filter_ok = defilter_8(&params);
 		} else if depth < 8 {
-			filter_ok = png_defilter_less_than_8(&params);
+			filter_ok = defilter_less_than_8(&params);
 			img.depth = 8;
 		} else {
-			filter_ok = png_defilter_16(&params);
+			filter_ok = defilter_16(&params);
 		}
 		if !filter_ok {
 			// Caller will destroy buffer for us.
@@ -1524,7 +1524,7 @@ png_defilter :: proc(img: ^Image, filter_bytes: ^bytes.Buffer, header: ^PNG_IHDR
 				temp_len := compute_buffer_size(x, y, channels, depth == 16 ? 16 : 8);
 				resize(&temp.buf, temp_len);
 
-				params := PNG_Filter_Params{
+				params := Filter_Params{
 					src      = input,
 					width    = x,
 					height   = y,
@@ -1535,12 +1535,12 @@ png_defilter :: proc(img: ^Image, filter_bytes: ^bytes.Buffer, header: ^PNG_IHDR
 				};
 
 				if depth == 8 {
-					filter_ok = png_defilter_8(&params);
+					filter_ok = defilter_8(&params);
 				} else if depth < 8 {
-					filter_ok = png_defilter_less_than_8(&params);
+					filter_ok = defilter_less_than_8(&params);
 					img.depth = 8;
 				} else {
-					filter_ok = png_defilter_16(&params);
+					filter_ok = defilter_16(&params);
 				}
 
 				if !filter_ok {
@@ -1583,4 +1583,4 @@ png_defilter :: proc(img: ^Image, filter_bytes: ^bytes.Buffer, header: ^PNG_IHDR
 	return E_General.OK; 
 }
 
-load_png :: proc{load_png_from_file, load_png_from_slice, load_png_from_stream};
+load :: proc{load_from_file, load_from_slice, load_from_stream};
