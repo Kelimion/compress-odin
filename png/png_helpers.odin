@@ -100,7 +100,7 @@ png_text :: proc(c: PNG_Chunk) -> (res: PNG_Text, ok: bool) {
 			buf: bytes.Buffer;
 			zlib_error := zlib.inflate_from_byte_array(&fields[2], &buf);
 			defer bytes.buffer_destroy(&buf);
-			if !is_kind(zlib_error, E_General, E_General.OK) {
+			if !is_kind(zlib_error, E_General.OK) {
 				ok = false; return;
 			}
 
@@ -154,7 +154,7 @@ png_text :: proc(c: PNG_Chunk) -> (res: PNG_Text, ok: bool) {
 				buf: bytes.Buffer;
 				zlib_error := zlib.inflate_from_byte_array(&rest, &buf);
 				defer bytes.buffer_destroy(&buf);
-				if !is_kind(zlib_error, E_General, E_General.OK) {
+				if !is_kind(zlib_error, E_General.OK) {
 					
 					ok = false; return;
 				}
@@ -194,7 +194,7 @@ png_iccp :: proc(c: PNG_Chunk) -> (res: PNG_iCCP, ok: bool) {
 	// Set up ZLIB context and decompress iCCP payload
 	buf: bytes.Buffer;
 	zlib_error := zlib.inflate_from_byte_array(&fields[2], &buf);
-	if !is_kind(zlib_error, E_General, E_General.OK) {
+	if !is_kind(zlib_error, E_General.OK) {
 		bytes.buffer_destroy(&buf);
 		ok = false; return;
 	}

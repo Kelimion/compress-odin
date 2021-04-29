@@ -274,7 +274,7 @@ png_read_chunk :: proc(ctx: ^common.Context) -> (PNG_Chunk, Error) {
 png_read_header :: proc(ctx: ^common.Context) -> (PNG_IHDR, Error) {
 
 	c, e := png_read_chunk(ctx);
-	if !is_kind(e, E_General, E_General.OK) {
+	if !is_kind(e, E_General.OK) {
 		return {}, e;
 	}
 
@@ -436,7 +436,7 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 				seen_ihdr = true;
 
 				header, err = png_read_header(&ctx);
-				if !is_kind(err, E_General, E_General.OK) {
+				if !is_kind(err, E_General.OK) {
 					return img, err;
 				}
 
@@ -489,7 +489,7 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 				}
 
 				c, err = png_read_chunk(&ctx);
-				if !is_kind(err, E_General, E_General.OK) {
+				if !is_kind(err, E_General.OK) {
 					return img, err;
 				}
 
@@ -524,7 +524,7 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 				next := ch.type;
 				for next == .IDAT {
 					c, err = png_read_chunk(&ctx);
-					if !is_kind(err, E_General, E_General.OK) {
+					if !is_kind(err, E_General.OK) {
 						return img, err;
 					}
 
@@ -544,7 +544,7 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 				seen_idat = true;
 			case .IEND:
 				c, err = png_read_chunk(&ctx);
-				if !is_kind(err, E_General, E_General.OK) {
+				if !is_kind(err, E_General.OK) {
 					return img, err;
 				}
 				seen_iend = true;
@@ -553,7 +553,7 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 				// TODO: Make sure that 16-bit bKGD + tRNS chunks return u16 instead of u16be
 
 				c, err = png_read_chunk(&ctx);
-				if !is_kind(err, E_General, E_General.OK) {
+				if !is_kind(err, E_General.OK) {
 					return img, err;
 				}
 				seen_bkgd = true;
@@ -588,7 +588,7 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 				}
 			case .tRNS:
 				c, err = png_read_chunk(&ctx);
-				if !is_kind(err, E_General, E_General.OK) {
+				if !is_kind(err, E_General.OK) {
 					return img, err;
 				}
 				if .return_metadata in options {
@@ -618,7 +618,7 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 			case:
 				// Unhandled type
 				c, err = png_read_chunk(&ctx);
-				if !is_kind(err, E_General, E_General.OK) {
+				if !is_kind(err, E_General.OK) {
 					return img, err;
 				}
 				if .return_metadata in options {
@@ -646,7 +646,7 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 	zlib_error := zlib.inflate(&idat, &buf);
 	defer bytes.buffer_destroy(&buf);
 
-	if !is_kind(zlib_error, E_General, E_General.OK) {
+	if !is_kind(zlib_error, E_General.OK) {
 		return {}, zlib_error;
 	} else {
 		/*
@@ -683,7 +683,7 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 		as metadata, and set it instead to the raw number of channels.
 	*/
 	defilter_error := png_defilter(img, &buf, &header, options);
-	if !is_kind(defilter_error, E_General, E_General.OK) {
+	if !is_kind(defilter_error, E_General.OK) {
 		bytes.buffer_destroy(&img.pixels);
 		return {}, defilter_error;
 	}

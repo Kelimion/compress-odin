@@ -38,8 +38,8 @@ main :: proc() {
 		} else {
 			err = load_gzip_from_file(file, &buf);
 		}
-		if !is_kind(err, E_General, E_General.OK) {
-			if is_kind(err, E_General, E_General.File_Not_Found) {
+		if !is_kind(err, E_General.OK) {
+			if is_kind(err, E_General.File_Not_Found) {
 				stderr("File not found: ");
 				stderr(file);
 				stderr("\n");

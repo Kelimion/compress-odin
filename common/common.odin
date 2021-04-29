@@ -77,8 +77,8 @@ Image_Option :: enum {
 }
 Image_Options :: distinct bit_set[Image_Option];
 
-// Error helper, e.g. is_kind(err, General_Error, General_Error.OK);
-is_kind :: proc(u: $U, $V: typeid, x: V) -> bool {
+// Error helper, e.g. is_kind(err, General_Error.OK);
+is_kind :: proc(u: $U, x: $V) -> bool {
     v, ok := u.(V);
     return ok && v == x;
 }

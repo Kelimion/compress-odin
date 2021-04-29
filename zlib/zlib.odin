@@ -257,7 +257,7 @@ parse_huffman_block :: proc(z: ^ZLIB_Context, z_repeat, z_offset: ^ZLIB_Huffman_
 
 	#no_bounds_check for {
 		value, e := zlib_decode_huffman(z, z_repeat);
-		if !is_kind(e, E_General, E_General.OK) {
+		if !is_kind(e, E_General.OK) {
 			return err;
 		}
 		if value < 256 {
@@ -278,7 +278,7 @@ parse_huffman_block :: proc(z: ^ZLIB_Context, z_repeat, z_offset: ^ZLIB_Huffman_
 			}
 
 			value, e = zlib_decode_huffman(z, z_offset);
-			if !is_kind(e, E_General, E_General.OK) {
+			if !is_kind(e, E_General.OK) {
 				return E_Deflate.Bad_Huffman_Code;
 			}
 
@@ -391,7 +391,7 @@ inflate_from_stream :: proc(using ctx: ^ZLIB_Context, raw := false, allocator :=
 
  	// Parse ZLIB stream without header.
 	err = inflate_raw(ctx);
-	if !is_kind(err, E_General, E_General.OK) {
+	if !is_kind(err, E_General.OK) {
 		return err;
 	}
 
@@ -419,15 +419,15 @@ inflate_from_stream_raw :: proc(z: ^ZLIB_Context, allocator := context.allocator
 	codelength_ht: ^ZLIB_Huffman_Table;
 
 	z_repeat, err = allocate_huffman_table(allocator=context.allocator);
-	if !is_kind(err, E_General, E_General.OK) {
+	if !is_kind(err, E_General.OK) {
 		return err;
 	}
 	z_offset, err = allocate_huffman_table(allocator=context.allocator);
-	if !is_kind(err, E_General, E_General.OK) {
+	if !is_kind(err, E_General.OK) {
 		return err;
 	}
 	codelength_ht, err = allocate_huffman_table(allocator=context.allocator);
-	if !is_kind(err, E_General, E_General.OK) {
+	if !is_kind(err, E_General.OK) {
 		return err;
 	}
 	defer free(z_repeat);
@@ -478,11 +478,11 @@ inflate_from_stream_raw :: proc(z: ^ZLIB_Context, allocator := context.allocator
 			if type == 1 {
 				// Use fixed code lengths.
 				err = zlib_build_huffman(z_repeat, Z_FIXED_LENGTH[:]);
-				if !is_kind(err, E_General, E_General.OK) {
+				if !is_kind(err, E_General.OK) {
 					return err;
 				}
 				err = zlib_build_huffman(z_offset, Z_FIXED_DIST[:]);
-				if !is_kind(err, E_General, E_General.OK) {
+				if !is_kind(err, E_General.OK) {
 					return err;
 				}
 			} else {
@@ -503,7 +503,7 @@ inflate_from_stream_raw :: proc(z: ^ZLIB_Context, allocator := context.allocator
 					codelength_sizes[Z_LENGTH_DEZIGZAG[i]] = u8(s);
 				}
 				err = zlib_build_huffman(codelength_ht, codelength_sizes[:]);
-				if !is_kind(err, E_General, E_General.OK) {
+				if !is_kind(err, E_General.OK) {
 					return err;
 				}
 
@@ -512,7 +512,7 @@ inflate_from_stream_raw :: proc(z: ^ZLIB_Context, allocator := context.allocator
 
 				for n < ntot {
 					c, err = zlib_decode_huffman(z, codelength_ht);
-					if !is_kind(err, E_General, E_General.OK) {
+					if !is_kind(err, E_General.OK) {
 						return err;
 					}
 
@@ -555,18 +555,18 @@ inflate_from_stream_raw :: proc(z: ^ZLIB_Context, allocator := context.allocator
 			   	}
 
 				err = zlib_build_huffman(z_repeat, lencodes[:hlit]);
-				if !is_kind(err, E_General, E_General.OK) {
+				if !is_kind(err, E_General.OK) {
 					return err;
 				}
 
 				err = zlib_build_huffman(z_offset, lencodes[hlit:ntot]);
-				if !is_kind(err, E_General, E_General.OK) {
+				if !is_kind(err, E_General.OK) {
 					return err;
 				}
 			}
 			err = parse_huffman_block(z, z_repeat, z_offset);
 			// log.debugf("Err: %v | Final: %v | Type: %v\n", err, final, type);
-			if !is_kind(err, E_General, E_General.OK) {
+			if !is_kind(err, E_General.OK) {
 				return err;
 			}
 		}

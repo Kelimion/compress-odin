@@ -292,7 +292,7 @@ load_gzip_from_stream :: proc(stream: ^io.Stream, buf: ^bytes.Buffer, allocator 
 
 	// fmt.printf("ZLIB returned: %v\n", zlib_error);
 
-	if !is_kind(zlib_error, E_General, E_General.OK) || zlib_error == nil {
+	if !is_kind(zlib_error, E_General.OK) || zlib_error == nil {
 		return zlib_error;
 	}
 
