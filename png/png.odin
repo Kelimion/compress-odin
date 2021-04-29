@@ -305,8 +305,8 @@ png_read_header :: proc(ctx: ^common.Context) -> (PNG_IHDR, Error) {
 				Allowed bit depths: 1, 2, 4, 8 and 16.
 			*/
 			allowed := false;
-			for i in 0..4 {
-				if bit_depth == 1 << u8(i) {
+			for i in ([]u8{1, 2, 4, 8, 16}) {
+				if bit_depth == i {
 					allowed = true;
 					break;
 				}
@@ -328,8 +328,8 @@ png_read_header :: proc(ctx: ^common.Context) -> (PNG_IHDR, Error) {
 				Allowed bit depths: 1, 2, 4 and 8.
 			*/
 			allowed := false;
-			for i in 0..3 {
-				if bit_depth == 1 << u8(i) {
+			for i in ([]u8{1, 2, 4, 8}) {
+				if bit_depth == i {
 					allowed = true;
 					break;
 				}
