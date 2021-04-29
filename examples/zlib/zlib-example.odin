@@ -29,12 +29,14 @@ main :: proc() {
 
 	buf: bytes.Buffer;
 
+	// We can pass ", true" to inflate a raw DEFLATE stream instead of a ZLIB wrapped one.
 	err := zlib.inflate(&ODIN_DEMO, &buf);
 	defer bytes.buffer_destroy(&buf);
-	s := bytes.buffer_to_string(&buf);
+
 	if !zlib.is_kind(err, zlib.E_General.OK) {
 		fmt.printf("\nError: %v\n", err);
 	}
+	s := bytes.buffer_to_string(&buf);
 	fmt.printf("Input: %v bytes, output (%v bytes):\n%v\n", len(ODIN_DEMO), len(s), s);
 	assert(len(s) == 438);
 }

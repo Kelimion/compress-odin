@@ -299,7 +299,11 @@ png_read_header :: proc(ctx: ^common.Context) -> (PNG_IHDR, Error) {
 	}
 
 	switch (transmute(u8)color_type) {
-		case 0: // Grayscale
+		case 0:
+			/*
+				Grayscale.
+				Allowed bit depths: 1, 2, 4, 8 and 16.
+			*/
 			allowed := false;
 			for i in 0..4 {
 				if bit_depth == 1 << u8(i) {
@@ -310,11 +314,19 @@ png_read_header :: proc(ctx: ^common.Context) -> (PNG_IHDR, Error) {
 			if !allowed {
 				return {}, E_PNG.Invalid_Color_Bit_Depth_Combo;
 			}
-		case 2, 4, 6: // RGB, Grayscale+Alpha, RGBA
+		case 2, 4, 6:
+			/*
+				RGB, Grayscale+Alpha, RGBA.
+				Allowed bit depths: 8 and 16
+			*/
 			if bit_depth != 8 && bit_depth != 16 {
 				return {}, E_PNG.Invalid_Color_Bit_Depth_Combo;
 			}
-		case 3: // Paletted. PLTE chunk must appear
+		case 3:
+			/*
+				Paletted. PLTE chunk must appear.
+				Allowed bit depths: 1, 2, 4 and 8.
+			*/
 			allowed := false;
 			for i in 0..3 {
 				if bit_depth == 1 << u8(i) {
