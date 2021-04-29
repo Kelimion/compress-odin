@@ -7,8 +7,6 @@ import "core:strings"
 import "core:bytes"
 import "core:mem"
 
-// import "core:fmt"
-
 /*
 	These are a few useful utility functions to work with PNG images.
 */
@@ -19,6 +17,13 @@ import "core:mem"
 */
 
 png_destroy :: proc(img: ^Image) {
+	if img == nil {
+		/*
+			Nothing to do.
+			Load must've returned with an error.
+		*/
+		return;
+	}
 	bytes.buffer_destroy(&img.pixels);
 
 	/*

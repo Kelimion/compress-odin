@@ -7,3 +7,4 @@
 *.py
 test/*
 profiler/*
+build.bat

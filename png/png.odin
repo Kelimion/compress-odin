@@ -11,6 +11,8 @@ import "core:io"
 import "core:mem"
 import "core:intrinsics"
 
+import "core:fmt"
+
 Image_Option  :: common.Image_Option;
 Image_Options :: common.Image_Options;
 Image         :: common.Image;
@@ -603,12 +605,13 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 				if !is_kind(err, E_General.OK) {
 					return img, err;
 				}
-				if .return_metadata in options {
-					append(&info.chunks, c);
-				}
 
 				if .Alpha in info.header.color_type {
 					return img, E_PNG.TRNS_Encountered_Unexpectedly;
+				}
+
+				if .return_metadata in options {
+					append(&info.chunks, c);
 				}
 
 				/*
@@ -617,9 +620,20 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 					sake. If we early because the user just cares about metadata,
 					we'll set it to 'final_image_channels'.
 				*/
-				seen_trns = true;
-				trns = c;
+
 				final_image_channels += 1;
+
+				seen_trns = true;
+				if info.header.bit_depth < 8 && .Paletted not_in info.header.color_type {
+					// Rescale tRNS data so key matches intensity
+					dsc := depth_scale_table;
+					scale := dsc[info.header.bit_depth];
+					if scale != 1 {
+						key := mem.slice_data_cast([]u16be, c.data)[0] * u16be(scale);
+						c.data = []u8{0, u8(key & 255)};
+					}
+				}
+				trns = c;
 			case .iDOT, .CbGI:
 				/*
 					iPhone PNG bastardization that doesn't adhere to spec with broken IDAT chunk.
@@ -708,24 +722,52 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 		may supply an option to return Gray/Gray+Alpha as-is, in which case RGB(A)
 		will become the default.
 	*/
+
+	fmt.printf("header:\n\t%v\n", header );
+	fmt.printf("options:\n\t%v\n", options);
+
+	raw_image_channels := img.channels;
+	out_image_channels := 3;
+
+	/*
+		To give ourselves less options to test, we'll knock out
+		`.blend_background` and `seen_bkgd` if we haven't seen both.
+	*/
+	if !(seen_bkgd && .blend_background in options) {
+		options ~= {.blend_background};
+		seen_bkgd = false;
+	}
+
+	if seen_trns || .Alpha in info.header.color_type || .alpha_add_if_missing in options {
+		out_image_channels = 4;
+	}
+
+	if .alpha_drop_if_present in options {
+		out_image_channels = 3;
+	}
+
+	if seen_bkgd && .blend_background in options && .alpha_add_if_missing not_in options {
+		out_image_channels = 3;
+	}
+
+	add_alpha   := (seen_trns && .alpha_drop_if_present not_in options) || (.alpha_add_if_missing in options);
+	premultiply := .alpha_premultiply in options || .blend_background in options;
+
+	img.channels = out_image_channels;
+
 	if .Paletted in header.color_type {
 		temp := img.pixels;
 		defer bytes.buffer_destroy(&temp);
 
-		img.channels = 3;
-		if seen_trns && .alpha_drop_if_present not_in options {
-			img.channels = 4;
-		}
-
 		// We need to create a new image buffer
-		dest_raw_size := compute_buffer_size(int(header.width), int(header.height), img.channels, 8);
+		dest_raw_size := compute_buffer_size(int(header.width), int(header.height), out_image_channels, 8);
 		t := bytes.Buffer{};
 		resize(&t.buf, dest_raw_size);
 
 		i := 0; j := 0;
 
 		// If we don't have transparency or drop it without applying it, we can do this:
-		if !seen_trns || (.alpha_premultiply not_in options && .alpha_drop_if_present in options) {
+		if (!seen_trns || (seen_trns && .alpha_drop_if_present in options && .alpha_premultiply not_in options)) && .alpha_add_if_missing not_in options {
 			for h := 0; h < int(img.height); h += 1 {
 				for w := 0; w < int(img.width);  w += 1 {
 					c := plte.entries[temp.buf[i]];
@@ -735,19 +777,30 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 					i += 1; j += 3;
 				}
 			}
-		} else if seen_trns {
-			if .alpha_drop_if_present in options {
-				img.channels = 3;
+		} else if add_alpha || .alpha_drop_if_present in options {
+			bg := [3]f32{0, 0, 0};
+			if premultiply && seen_bkgd {
+				c16 := img.background.([3]u16);
+				bg = [3]f32{f32(c16.r), f32(c16.g), f32(c16.b)};
 			}
+
+			no_alpha := (.alpha_drop_if_present in options || premultiply) && .alpha_add_if_missing not_in options;
+			blend_background := seen_bkgd && .blend_background in options;
 
 			for h := 0; h < int(img.height); h += 1 {
 				for w := 0; w < int(img.width);  w += 1 {
 					index := temp.buf[i];
-					c     := plte.entries[index];
-					a     := int(index) < len(trns.data) ? f32(trns.data[index]) : f32(255.0);
-					alpha := f32(a / 255.0);
 
-					if .alpha_premultiply in options {
+					c     := plte.entries[index];
+					a     := int(index) < len(trns.data) ? trns.data[index] : 255;
+					alpha := f32(a) / 255.0;
+
+					if blend_background {
+						c.r = u8((1.0 - alpha) * bg[0] + f32(c.r) * alpha);
+						c.g = u8((1.0 - alpha) * bg[1] + f32(c.g) * alpha);
+						c.b = u8((1.0 - alpha) * bg[2] + f32(c.b) * alpha);
+						a = 255;
+					} else if premultiply {
 						c.r = u8(f32(c.r) * alpha);
 						c.g = u8(f32(c.g) * alpha);
 						c.b = u8(f32(c.b) * alpha);
@@ -758,38 +811,26 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 					t.buf[j+2] = c.b;
 					i += 1;
 
-					if .alpha_drop_if_present in options {
+					if no_alpha {
 						j += 3;
-					} else if int(index) < len(trns.data) {
-						t.buf[j+3] = trns.data[index];
-						j += 4;
 					} else {
-						t.buf[j+3] = 255;
+						t.buf[j+3] = u8(a);
 						j += 4;
 					}
 				}
 			}
 		} else {
-			// We missed an option combination
+			// This should be impossible.
 			assert(false);
 		}
 
 		img.pixels = t;
 
 	} else if img.depth == 16 {
-		raw_image_channels := img.channels;
-		out_image_channels := 3;
-		if seen_trns || .Alpha in info.header.color_type {
-			out_image_channels = 4;
-		}
-		if .alpha_drop_if_present in options {
-			out_image_channels = 3;
-		}
-
 		// Check if we need to do something.
 		if raw_image_channels == out_image_channels {
 			// If we have 3 in and 3 out, or 4 in and 4 out without premultiplication...
-			if raw_image_channels == 4 && .alpha_premultiply not_in options {
+			if raw_image_channels == 4 && .alpha_premultiply not_in options && !seen_bkgd {
 				// Then we're done.
 				return img, E_General.OK;
 			}
@@ -816,13 +857,21 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 
 				for len(p16) > 0 {
 					r := p16[0];
-					alpha := u16(1);
 
-					if seen_trns && r == key {
-						alpha = 0;
+					alpha := u16(1); // Default to full opaque
+
+					if seen_trns {
+						if r == key {
+							if seen_bkgd {
+								c := img.background.([3]u16);
+								r = c[0];
+							} else {
+								alpha = 0; // Keyed transparency
+							}
+						}
 					}
 
-					if seen_trns && .alpha_premultiply in options {
+					if premultiply {
 						o16[0] = r * alpha;
 						o16[1] = r * alpha;
 						o16[2] = r * alpha;
@@ -832,7 +881,7 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 						o16[2] = r;
 					}
 
-					if seen_trns && .alpha_drop_if_present not_in options {
+					if out_image_channels == 4 {
 						o16[3] = alpha * 65535;
 					}
 
@@ -843,7 +892,7 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 				// Gray with alpha, we shouldn't have a tRNS chunk.
 				for len(p16) > 0 {
 					r := p16[0];
-					if .alpha_premultiply in options {
+					if premultiply {
 						alpha := p16[1];
 						c := u16(f32(r) * f32(alpha) / f32(65535));
 						o16[0] = c;
@@ -863,7 +912,11 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 					o16 = o16[out_image_channels:];
 				}
 			case 3:
-				// Color without Alpha. We may still have a tRNS chunk
+				/*
+					Color without Alpha.
+					We may still have a tRNS chunk or `.alpha_add_if_missing`.
+				*/
+
 				key: []u16;
 				if seen_trns {
 					key = mem.slice_data_cast([]u16, trns.data);
@@ -878,11 +931,18 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 
 					if seen_trns {
 						if r == key[0] && g == key[1] && b == key[2] {
-							alpha = 0; // Keyed transparency
+							if seen_bkgd {
+								c := img.background.([3]u16);
+								r = c[0];
+								g = c[1];
+								b = c[2];
+							} else {
+								alpha = 0; // Keyed transparency
+							}
 						}
 					}
 
-					if seen_trns && .alpha_premultiply in options {
+					if premultiply {
 						o16[0] = r * alpha;
 						o16[1] = g * alpha;
 						o16[2] = b * alpha;
@@ -892,7 +952,7 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 						o16[2] = b;
 					}
 
-					if seen_trns && .alpha_drop_if_present not_in options {
+					if out_image_channels == 4 {
 						o16[3] = alpha * 65535;
 					}
 
@@ -907,7 +967,7 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 					b     := p16[2];
 					a     := p16[3];
 
-					if .alpha_premultiply in options {
+					if premultiply {
 						alpha := f32(a) / 65535.0;
 						o16[0] = u16(f32(r) * alpha);
 						o16[1] = u16(f32(g) * alpha);
@@ -933,15 +993,6 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 		img.channels = out_image_channels;
 
 	} else if img.depth == 8 {
-		raw_image_channels := img.channels;
-		out_image_channels := 3;
-		if seen_trns || .Alpha in info.header.color_type {
-			out_image_channels = 4;
-		}
-		if .alpha_drop_if_present in options {
-			out_image_channels = 3;
-		}
-
 		// Check if we need to do something.
 		if raw_image_channels == out_image_channels {
 			// If we have 3 in and 3 out, or 4 in and 4 out without premultiplication...
@@ -967,28 +1018,34 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 				// Gray without Alpha. Might have tRNS alpha.
 				key   := u8(0);
 				if seen_trns {
-					key = mem.slice_data_cast([]u8, trns.data)[0];
+					key = u8(mem.slice_data_cast([]u16be, trns.data)[0]);
 				}
 
 				for len(p) > 0 {
 					r := p[0];
 					alpha := u8(1);
 
-					if seen_trns && r == key {
-						alpha = 0;
-					}
-
-					if seen_trns && .alpha_premultiply in options {
-						o[0] = r * alpha;
-						o[1] = r * alpha;
-						o[2] = r * alpha;
+					if seen_trns {
+						if r == key {
+							if seen_bkgd {
+								c := img.background.([3]u16);
+								r = u8(c[0]);
+							} else {
+								alpha = 0; // Keyed transparency
+							}
+						}
+						if premultiply {
+							o[0] = r * alpha;
+							o[1] = r * alpha;
+							o[2] = r * alpha;
+						}
 					} else {
 						o[0] = r;
 						o[1] = r;
 						o[2] = r;
 					}
 
-					if seen_trns && .alpha_drop_if_present not_in options {
+					if out_image_channels == 4 {
 						o[3] = alpha * 255;
 					}
 
@@ -1019,6 +1076,7 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 					o = o[out_image_channels:];
 				}
 			case 3:
+				fmt.printf("Here..\n");
 				// Color without Alpha. We may still have a tRNS chunk
 				key: []u8;
 				if seen_trns {
@@ -1038,21 +1096,28 @@ load_png_from_stream :: proc(stream: ^io.Stream, options: Image_Options = {}, al
 					// TODO: Combine the seen_trns cases.
 					if seen_trns {
 						if r == key[0] && g == key[1] && b == key[2] {
-							alpha = 0; // Keyed transparency
+							if seen_bkgd {
+								c := img.background.([3]u16);
+								r = u8(c[0]);
+								g = u8(c[1]);
+								b = u8(c[2]);
+							} else {
+								alpha = 0; // Keyed transparency
+							}
 						}
-					}
 
-					if seen_trns && .alpha_premultiply in options {
-						o[0] = r * alpha;
-						o[1] = g * alpha;
-						o[2] = b * alpha;
+						if .alpha_premultiply in options || .blend_background in options {
+							o[0] = r * alpha;
+							o[1] = g * alpha;
+							o[2] = b * alpha;
+						}
 					} else {
 						o[0] = r;
 						o[1] = g;
 						o[2] = b;
 					}
 
-					if seen_trns && .alpha_drop_if_present not_in options {
+					if out_image_channels == 4 {
 						o[3] = alpha * 255;
 					}
 
@@ -1128,6 +1193,8 @@ PNG_Filter_Params :: struct #packed {
 	channels: int,
 	rescale : bool,
 }
+
+depth_scale_table :: []u8{0, 0xff, 0x55, 0, 0x11, 0,0,0, 0x01};
 
 // @(optimization_mode="speed")
 png_defilter_8 :: proc(params: ^PNG_Filter_Params) -> (ok: bool) {
@@ -1258,9 +1325,9 @@ png_defilter_less_than_8 :: proc(params: ^PNG_Filter_Params) -> (ok: bool) #no_b
 	// Let's expand the bits
 	dest = orig_dest;
 
-	depth_scale_table := []u8{0, 0xff, 0x55, 0, 0x11, 0,0,0, 0x01};
 	// Don't rescale the bits if we're a paletted image.
-	scale := rescale ? depth_scale_table[depth] : 1;
+	dsc := depth_scale_table;
+	scale := rescale ? dsc[depth] : 1;
 
 	/*
 		For sBIT support we should probably set scale to 1 and mask the significant bits.
@@ -1519,9 +1586,6 @@ png_defilter :: proc(img: ^Image, filter_bytes: ^bytes.Buffer, header: ^PNG_IHDR
 		}
 	}
 
-	if .alpha_add_if_missing in options && .Alpha not_in header.color_type {
-		return E_General.Unimplemented;
-	}
 	return E_General.OK; 
 }
 

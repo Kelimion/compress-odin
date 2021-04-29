@@ -24,11 +24,17 @@ is_kind   :: common.is_kind;
 main :: proc() {
 	file: string;
 
-	options := Image_Options{.return_metadata, .alpha_drop_if_present, .alpha_premultiply};
+	options := Image_Options{.alpha_add_if_missing, .blend_background};
 	err:     Error;
 	img:     ^Image;
 
 	file = "logo-slim";
+	file = "basn3p01"; // 1 bit (2 color) paletted
+	file = "basn3p02"; // 2 bit (4 color) paletted
+	file = "basn3p04"; // 4 bit (16 color) paletted
+	file = "basn3p08"; // 8 bit (256 color) paletted
+
+	// options = Image_Options{.blend_background, .alpha_premultiply, .alpha_drop_if_present};
 
 	file = fmt.tprintf("../../test/%v.png", file);
 
