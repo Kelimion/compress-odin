@@ -50,6 +50,8 @@ zlib_test :: proc(t: ^testing.T) {
     expect(t, is_kind(err, OK), "ZLIB failed to decompress ODIN_DEMO");
     s := bytes.buffer_to_string(&buf);
 
+    expect(t, s[68] == 240 && s[69] == 159 && s[70] == 152, "ZLIB result should've contained 😃 at position 68.");
+
     expect(t, len(s) == 438, "ZLIB result has an unexpected length.");
 }
 
@@ -100,7 +102,7 @@ PNG_Dims    :: struct{
     depth:     u8,
 }
 
-PNG_Tests := []PNG_Test{
+Basic_PNG_Tests := []PNG_Test{
     /*
         Basic format tests:
             http://www.schaik.com/pngsuite/pngsuite_bas_png.html
@@ -211,7 +213,9 @@ PNG_Tests := []PNG_Test{
             {Premul_Drop, OK, {32, 32, 3, 16}, 0x_de9d_19fd},
         },
     },
+};
 
+Interlaced_PNG_Tests := []PNG_Test{
     /*
         Interlaced format tests:
             http://www.schaik.com/pngsuite/pngsuite_int_png.html
@@ -327,7 +331,9 @@ PNG_Tests := []PNG_Test{
             {Premul_Drop, OK, {32, 32, 3, 16}, 0x_de9d_19fd},
         },
     },
+};
 
+Odd_Sized_PNG_Tests := []PNG_Test{
     /*
         PngSuite - Odd sizes / PNG-files:
             http://www.schaik.com/pngsuite/pngsuite_siz_png.html
@@ -347,55 +353,277 @@ PNG_Tests := []PNG_Test{
             {Default,     OK, { 1,  1, 3,  8}, 0x_d243_369f},
         },
     },
+    {
+        "s02i3p01", // 2x2 paletted file, interlaced
+        {
+            {Default,     OK, { 2,  2, 3,  8}, 0x_9e93_1d85},
+        },
+    },
+    {
+        "s02n3p01", // 2x2 paletted file, no interlacing
+        {
+            {Default,     OK, { 2,  2, 3,  8}, 0x_9e93_1d85},
+        },
+    },
+    {
+        "s03i3p01", // 3x3 paletted file, interlaced
+        {
+            {Default,     OK, { 3,  3, 3,  8}, 0x_6916_380e},
+        },
+    },
+    {
+        "s03n3p01", // 3x3 paletted file, no interlacing
+        {
+            {Default,     OK, { 3,  3, 3,  8}, 0x_6916_380e},
+        },
+    },
+    {
+        "s04i3p01", // 4x4 paletted file, interlaced
+        {
+            {Default,     OK, { 4,  4, 3,  8}, 0x_c2e0_d49b},
+        },
+    },
+    {
+        "s04n3p01", // 4x4 paletted file, no interlacing
+        {
+            {Default,     OK, { 4,  4, 3,  8}, 0x_c2e0_d49b},
+        },
+    },
+    {
+        "s05i3p02", // 5x5 paletted file, interlaced
+        {
+            {Default,     OK, { 5,  5, 3,  8}, 0x_1242_b6fb},
+        },
+    },
+    {
+        "s05n3p02", // 5x5 paletted file, no interlacing
+        {
+            {Default,     OK, { 5,  5, 3,  8}, 0x_1242_b6fb},
+        },
+    },
+    {
+        "s06i3p02", // 6x6 paletted file, interlaced
+        {
+            {Default,     OK, { 6,  6, 3,  8}, 0x_d758_9540},
+        },
+    },
+    {
+        "s06n3p02", // 6x6 paletted file, no interlacing
+        {
+            {Default,     OK, { 6,  6, 3,  8}, 0x_d758_9540},
+        },
+    },
+    {
+        "s07i3p02", // 7x7 paletted file, interlaced
+        {
+            {Default,     OK, { 7,  7, 3,  8}, 0x_d2cc_f489},
+        },
+    },
+    {
+        "s07n3p02", // 7x7 paletted file, no interlacing
+        {
+            {Default,     OK, { 7,  7, 3,  8}, 0x_d2cc_f489},
+        },
+    },
+    {
+        "s08i3p02", // 8x8 paletted file, interlaced
+        {
+            {Default,     OK, { 8,  8, 3,  8}, 0x_2ba1_b03e},
+        },
+    },
+    {
+        "s08n3p02", // 8x8 paletted file, no interlacing
+        {
+            {Default,     OK, { 8,  8, 3,  8}, 0x_2ba1_b03e},
+        },
+    },
+    {
+        "s09i3p02", // 9x9 paletted file, interlaced
+        {
+            {Default,     OK, { 9,  9, 3,  8}, 0x_9762_d2ed},
+        },
+    },
+    {
+        "s09n3p02", // 9x9 paletted file, no interlacing
+        {
+            {Default,     OK, { 9,  9, 3,  8}, 0x_9762_d2ed},
+        },
+    },
+    {
+        "s32i3p04", // 32x32 paletted file, interlaced
+        {
+            {Default,     OK, {32, 32, 3,  8}, 0x_ad01_f44d},
+        },
+    },
+    {
+        "s32n3p04", // 32x32 paletted file, no interlacing
+        {
+            {Default,     OK, {32, 32, 3,  8}, 0x_ad01_f44d},
+        },
+    },
+    {
+        "s33i3p04", // 33x33 paletted file, interlaced
+        {
+            {Default,     OK, {33, 33, 3,  8}, 0x_d2f4_ae68},
+        },
+    },
+    {
+        "s33n3p04", // 33x33 paletted file, no interlacing
+        {
+            {Default,     OK, {33, 33, 3,  8}, 0x_d2f4_ae68},
+        },
+    },
+    {
+        "s34i3p04", // 34x34 paletted file, interlaced
+        {
+            {Default,     OK, {34, 34, 3,  8}, 0x_bbed_a3f7},
+        },
+    },
+    {
+        "s34n3p04", // 34x34 paletted file, no interlacing
+        {
+            {Default,     OK, {34, 34, 3,  8}, 0x_bbed_a3f7},
+        },
+    },
+    {
+        "s35i3p04", // 35x35 paletted file, interlaced
+        {
+            {Default,     OK, {35, 35, 3,  8}, 0x_9929_3acf},
+        },
+    },
+    {
+        "s35n3p04", // 35x35 paletted file, no interlacing
+        {
+            {Default,     OK, {35, 35, 3,  8}, 0x_9929_3acf},
+        },
+    },
+    {
+        "s36i3p04", // 36x36 paletted file, interlaced
+        {
+            {Default,     OK, {36, 36, 3,  8}, 0x_f51a_96e0},
+        },
+    },
+    {
+        "s36n3p04", // 36x36 paletted file, no interlacing
+        {
+            {Default,     OK, {36, 36, 3,  8}, 0x_f51a_96e0},
+        },
+    },
+    {
+        "s37i3p04", // 37x37 paletted file, interlaced
+        {
+            {Default,     OK, {37, 37, 3,  8}, 0x_9207_58a4},
+        },
+    },
+    {
+        "s37n3p04", // 37x37 paletted file, no interlacing
+        {
+            {Default,     OK, {37, 37, 3,  8}, 0x_9207_58a4},
+        },
+    },
+    {
+        "s38i3p04", // 38x38 paletted file, interlaced
+        {
+            {Default,     OK, {38, 38, 3,  8}, 0x_eb3b_f324},
+        },
+    },
+    {
+        "s38n3p04", // 38x38 paletted file, no interlacing
+        {
+            {Default,     OK, {38, 38, 3,  8}, 0x_eb3b_f324},
+        },
+    },
+    {
+        "s39i3p04", // 39x39 paletted file, interlaced
+        {
+            {Default,     OK, {39, 39, 3,  8}, 0x_c06d_7da1},
+        },
+    },
+    {
+        "s39n3p04", // 39x39 paletted file, no interlacing
+        {
+            {Default,     OK, {39, 39, 3,  8}, 0x_c06d_7da1},
+        },
+    },
+    {
+        "s40i3p04", // 40x40 paletted file, interlaced
+        {
+            {Default,     OK, {40, 40, 3,  8}, 0x_0d46_58a0},
+        },
+    },
+    {
+        "s40n3p04", // 40x40 paletted file, no interlacing
+        {
+            {Default,     OK, {40, 40, 3,  8}, 0x_0d46_58a0},
+        },
+    },
+};
 
-// "s02i3p01", // 2x2 paletted file, interlaced
-// "s02n3p01", // 2x2 paletted file, no interlacing
-// "s03i3p01", // 3x3 paletted file, interlaced
-// "s03n3p01", // 3x3 paletted file, no interlacing
-// "s04i3p01", // 4x4 paletted file, interlaced
-// "s04n3p01", // 4x4 paletted file, no interlacing
-// "s05i3p02", // 5x5 paletted file, interlaced
-// "s05n3p02", // 5x5 paletted file, no interlacing
-// "s06i3p02", // 6x6 paletted file, interlaced
-// "s06n3p02", // 6x6 paletted file, no interlacing
-// "s07i3p02", // 7x7 paletted file, interlaced
-// "s07n3p02", // 7x7 paletted file, no interlacing
-// "s08i3p02", // 8x8 paletted file, interlaced
-// "s08n3p02", // 8x8 paletted file, no interlacing
-// "s09i3p02", // 9x9 paletted file, interlaced
-// "s09n3p02", // 9x9 paletted file, no interlacing
-// "s32i3p04", // 32x32 paletted file, interlaced
-// "s32n3p04", // 32x32 paletted file, no interlacing
-// "s33i3p04", // 33x33 paletted file, interlaced
-// "s33n3p04", // 33x33 paletted file, no interlacing
-// "s34i3p04", // 34x34 paletted file, interlaced
-// "s34n3p04", // 34x34 paletted file, no interlacing
-// "s35i3p04", // 35x35 paletted file, interlaced
-// "s35n3p04", // 35x35 paletted file, no interlacing
-// "s36i3p04", // 36x36 paletted file, interlaced
-// "s36n3p04", // 36x36 paletted file, no interlacing
-// "s37i3p04", // 37x37 paletted file, interlaced
-// "s37n3p04", // 37x37 paletted file, no interlacing
-// "s38i3p04", // 38x38 paletted file, interlaced
-// "s38n3p04", // 38x38 paletted file, no interlacing
-// "s39i3p04", // 39x39 paletted file, interlaced
-// "s39n3p04", // 39x39 paletted file, no interlacing
-// "s40i3p04", // 40x40 paletted file, interlaced
-// "s40n3p04", // 40x40 paletted file, no interlacing
+Background_PNG_Tests := []PNG_Test{
+    /*
+        PngSuite - Background colors / PNG-files:
+            http://www.schaik.com/pngsuite/pngsuite_bck_png.html
 
+        This tests PNGs with and without a bKGD chunk and how we handle
+        blending the background.
+    */
 
+    {
+        "bgai4a08", // 8 bit grayscale, alpha, no background chunk, interlaced
+        {
+            {Default,     OK, {32, 32, 4,  8}, 0x_905d_5b60},
+            // No background, therefore no background blending and 3 channels.
+            {Blend_BG,    OK, {32, 32, 4,  8}, 0x_905d_5b60},
+        },
+    },
+    {
+        "bgai4a16", // 16 bit grayscale, alpha, no background chunk, interlaced
+        {
+            {Default,     OK, {32, 32, 4, 16}, 0x_224f_48b2},
+            // No background, therefore no background blending and 3 channels.
+
+            // TODO: Look at this case. Why does it look different when there's no bKGD?
+            {Blend_BG,    OK, {32, 32, 4, 16}, 0x_3000_e35c},
+        },
+    },
+
+// bgan6a08 - 3x8 bits rgb color, alpha, no background chunk
+// bgan6a16 - 3x16 bits rgb color, alpha, no background chunk
+// bgbn4a08 - 8 bit grayscale, alpha, black background chunk
+// bggn4a16 - 16 bit grayscale, alpha, gray background chunk
+// bgwn6a08 - 3x8 bits rgb color, alpha, white background chunk
+// bgyn6a16 - 3x16 bits rgb color, alpha, yellow background chunk
 
 };
+
+@test
+png_test :: proc(t: ^testing.T) {
+
+    total_tests    := 0;
+    total_expected := 100;
+
+    PNG_Suites := [][]PNG_Test{
+        Basic_PNG_Tests,
+        Interlaced_PNG_Tests,
+        Odd_Sized_PNG_Tests,
+        Background_PNG_Tests,
+    };
+
+    for suite in PNG_Suites {
+        total_tests += run_png_suite(t, suite);
+    }
+
+    error  := fmt.tprintf("Expected %v PNG tests, %v ran.", total_expected, total_tests);
+    expect(t, total_tests == total_expected, error);
+}
 
 is_kind :: proc(u: $U, x: $V) -> bool where U == compress.Error {
     v, ok := u.(V);
     return ok && v == x;
 }
 
-@test
-png_test :: proc(t: ^testing.T) {
-
-    for file in PNG_Tests {
+run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
+    for file in suite {
         test_suite_path := "PNG test suite";
 
         img:      ^image.Image;
@@ -405,10 +633,15 @@ png_test :: proc(t: ^testing.T) {
 
         count := 0;
         for test in file.tests {
+            count    += 1;
+            subtotal += 1;
+
             img, err := png.load(test_file, test.options);
 
             error  := fmt.tprintf("%v failed with %v.", file.file, err);
             passed := is_kind(err, OK);
+            expect(t, passed, error);
+
 
             if passed {
                 // No point in running the other tests if it didn't load.
@@ -425,9 +658,15 @@ png_test :: proc(t: ^testing.T) {
                 expect(t, test.hash == hash, error);
 
                 passed &= test.hash == hash;
+
+                if .return_metadata in test.options {
+                    if v, ok := img.sidecar.(png.Info); ok {
+                        fmt.println(v.chunks);
+                    }
+                }
+
             }
 
-            count += 1;
             if WRITE_PPM_ON_FAIL && !passed {
                 testing.logf(t, "Test failed, writing ppm/%v-%v.ppm to help debug.\n", file.file, count);
                 output := fmt.tprintf("ppm/%v-%v.ppm", file.file, count);
@@ -437,8 +676,9 @@ png_test :: proc(t: ^testing.T) {
             png.destroy(img);
         }
     }
-}
 
+    return;
+}
 
 // Crappy PPM writer used during testing. Don't use in production.
 write_image_as_ppm :: proc(filename: string, image: ^image.Image) -> (success: bool) {
@@ -446,6 +686,7 @@ write_image_as_ppm :: proc(filename: string, image: ^image.Image) -> (success: b
     _bg :: proc(bg: Maybe([3]u16), x, y: int, high := true) -> (res: [3]u16) {
         if v, ok := bg.?; ok {
             res = v;
+            fmt.println(res);
         } else {
             if high {
                 l := u16(30 * 256 + 30);
