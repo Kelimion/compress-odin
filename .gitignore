@@ -1,10 +1,10 @@
-*.png
 *.exe
 *.obj
 *.ll
 *.pdb
 *.ppm
 *.py
-test/*
+*.tgz
+*.zip
 profiler/*
 build.bat
