@@ -1,42 +1,24 @@
 //+ignore
-package compress_example_png
+package png_example
 
-import "../../common"
-import "../../png"
+import "core:compress"
+import "core:image"
+import "core:image/png"
 import "core:bytes"
-
 import "core:fmt"
 
 // For PPM writer
 import "core:mem"
 import "core:os"
 
-Image_Option  :: common.Image_Option;
-Image_Options :: common.Image_Options;
-Image         :: common.Image;
-
-Error     :: common.Compress_Error;
-E_General :: common.General_Error;
-E_PNG     :: common.PNG_Error;
-E_Deflate :: common.Deflate_Error;
-is_kind   :: common.is_kind;
-
 main :: proc() {
 	file: string;
 
-	options := Image_Options{.alpha_add_if_missing, .blend_background};
-	err:     Error;
-	img:     ^Image;
+	options := image.Options{};
+	err:       compress.Error;
+	img:      ^image.Image;
 
-	file = "logo-slim";
-	file = "basn3p01"; // 1 bit (2 color) paletted
-	file = "basn3p02"; // 2 bit (4 color) paletted
-	file = "basn3p04"; // 4 bit (16 color) paletted
-	file = "basn3p08"; // 8 bit (256 color) paletted
-
-	// options = Image_Options{.blend_background, .alpha_premultiply, .alpha_drop_if_present};
-
-	file = fmt.tprintf("../../test/%v.png", file);
+	file = "../test/logo-slim.png";
 
 	img, err = png.load(file, options);
 	defer png.destroy(img);
@@ -138,7 +120,7 @@ main :: proc() {
 		}
 	}
 
-	if is_kind(err, E_General.OK) && .do_not_decompress_image not_in options && .info not_in options {
+	if png.is_kind(err, png.E_General.OK) && .do_not_decompress_image not_in options && .info not_in options {
 		if ok := write_image_as_ppm("out.ppm", img); ok {
 			fmt.println("Saved decoded image.");
 		} else {
@@ -149,7 +131,7 @@ main :: proc() {
 }
 
 // Crappy PPM writer used during testing. Don't use in production.
-write_image_as_ppm :: proc(filename: string, image: ^Image) -> (success: bool) {
+write_image_as_ppm :: proc(filename: string, image: ^image.Image) -> (success: bool) {
 
 	_bg :: proc(bg: Maybe([3]u16), x, y: int, high := true) -> (res: [3]u16) {
 		if v, ok := bg.?; ok {
@@ -212,7 +194,7 @@ write_image_as_ppm :: proc(filename: string, image: ^Image) -> (success: bool) {
 	}
 	defer close(fd);
 
-	write_string(fd, 
+	write_string(fd,
 		fmt.tprintf("P6\n%v %v\n%v\n", width, height, (1 << depth -1)),
 	);
 

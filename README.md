@@ -3,7 +3,7 @@
 Compress-Odin aims to implement several common compression algorithms and file formats using them in [Odin](https://github.com/odin-lang/Odin).
 
 ## Immediate goals
-It aims to provide the following:
+It aims to provide the following and more:
 - deflate (compress)
 - inflate (unpack)
 - gzip    (gzip stream handling)
@@ -12,18 +12,10 @@ It aims to provide the following:
 - zlib    (reading and writing zlib streams)
 
 ## Progress
-PNG:
-- [X] `load_png` can load a PNG from a byte slice, a file or a stream and implements PNG v1.2 support.
 
-Several utility functions are provided to supply you with a more easily interpreted representation of the various ancillary chunks.
+ZLIB, DEFLATE and GZIP decompression are implemented and became Odin's `core:compress` standard packages.
 
-An example that loads a PNG and writes the output as a PPM (P6) file is included.
-
-ZLIB/DEFLATE:
-- [X] `inflate` will decompress ZLIB and raw DEFLATE streams. Compression and DEFLATE64 are not as of yet implemented.
-
-GZIP:
-- [x] GZIP files are parsed and we provide an example `zcat` application that'll output GZIP compressed contents to STDOUT.
+PNG 1.2 support has been implemented and was became Odin's `core:image/png` standard package.
 
 ZIP:
 - [x] Structures for ZIP 6.3.9 are defined and a basic file parser has been started.
