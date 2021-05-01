@@ -1186,15 +1186,14 @@ run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
                                 switch(file.file) {
                                 case "ccwn2c08":
                                     expected_chrm := png.cHRM{
-                                        w = png.CIE_1931{x = 0.313, y = 0.329},
-                                        r = png.CIE_1931{x = 0.640, y = 0.330},
-                                        g = png.CIE_1931{x = 0.300, y = 0.600},
-                                        b = png.CIE_1931{x = 0.150, y = 0.060},
+                                        w = png.CIE_1931{x = 0.3127, y = 0.3290},
+                                        r = png.CIE_1931{x = 0.6400, y = 0.3300},
+                                        g = png.CIE_1931{x = 0.3000, y = 0.6000},
+                                        b = png.CIE_1931{x = 0.1500, y = 0.0600},
                                     };
                                     error  = fmt.tprintf("%v test %v cHRM is %v, expected %v.", file.file, count, chrm, expected_chrm);
                                     expect(t, expected_chrm == chrm && chrm_ok, error);
                                 }
-
                             }
                         }
                     }
