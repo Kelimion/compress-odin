@@ -1032,12 +1032,55 @@ PNG_sPAL_Tests        := []PNG_Test{
     },
 };
 
+PNG_Ancillary_Tests   := []PNG_Test{
+    /*
+        PngSuite - Ancillary chunks / PNG-files:
+
+            http://www.schaik.com/pngsuite/pngsuite_cnk_png.html
+
+        This tests various chunk helpers.
+    */
+
+    {
+        "ccwn2c08", // chroma chunk w:0.3127,0.3290 r:0.64,0.33 g:0.30,0.60 b:0.15,0.06
+        {
+            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_61b6_9e8e},
+        },
+    },
+
+// "ccwn3p08", // chroma chunk w:0.3127,0.3290 r:0.64,0.33 g:0.30,0.60 b:0.15,0.06
+// "cdfn2c08", // physical pixel dimensions, 8x32 flat pixels
+// "cdhn2c08", // physical pixel dimensions, 32x8 high pixels
+// "cdsn2c08", // physical pixel dimensions, 8x8 square pixels
+// "cdun2c08", // physical pixel dimensions, 1000 pixels per 1 meter
+// "ch1n3p04", // histogram 15 colors
+// "ch2n3p08", // histogram 256 colors
+// "cm0n0g04", // modification time, 01-jan-2000 12:34:56
+// "cm7n0g04", // modification time, 01-jan-1970 00:00:00
+// "cm9n0g04", // modification time, 31-dec-1999 23:59:59
+// "cs3n2c16", // color, 13 significant bits
+// "cs3n3p08", // paletted, 3 significant bits
+// "cs5n2c08", // color, 5 significant bits
+// "cs5n3p08", // paletted, 5 significant bits
+// "cs8n2c08", // color, 8 significant bits (reference)
+// "cs8n3p08", // paletted, 8 significant bits (reference)
+// "ct0n0g04", // no textual data
+// "ct1n0g04", // with textual data
+// "ctzn0g04", // with compressed textual data
+// "cten0g04", // international UTF-8, english
+// "ctfn0g04", // international UTF-8, finnish
+// "ctgn0g04", // international UTF-8, greek
+// "cthn0g04", // international UTF-8, hindi
+// "ctjn0g04", // international UTF-8, japanese
+// "exif2c08", // chunk with jpeg exif data
+};
+
 
 @test
 png_test :: proc(t: ^testing.T) {
 
     total_tests    := 0;
-    total_expected := 191;
+    total_expected := 192;
 
     PNG_Suites := [][]PNG_Test{
         Basic_PNG_Tests,
@@ -1049,6 +1092,7 @@ png_test :: proc(t: ^testing.T) {
         PNG_Varied_IDAT_Tests,
         PNG_ZLIB_Levels_Tests,
         PNG_sPAL_Tests,
+        PNG_Ancillary_Tests,
     };
 
     for suite in PNG_Suites {
@@ -1105,25 +1149,28 @@ run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
                         for c in v.chunks {
                             #partial switch(c.header.type) {
                             case .gAMA:
-                                gamma := png.gamma(c);
                                 switch(file.file) {
                                 case "pp0n2c16", "pp0n6a08":
+                                    gamma := png.gamma(c);
+
                                     expected_gamma := f32(1.0);
                                     error  = fmt.tprintf("%v test %v gAMA is %v, expected %v.", file.file, count, gamma, expected_gamma);
                                     expect(t, gamma == expected_gamma, error);
                                 }
                             case .PLTE:
-                                plte, plte_ok := png.plte(c);
                                 switch(file.file) {
                                 case "pp0n2c16", "pp0n6a08":
+                                    plte, plte_ok := png.plte(c);
+
                                     expected_plte_len := u16(216);
                                     error  = fmt.tprintf("%v test %v PLTE length is %v, expected %v.", file.file, count, plte.used, expected_plte_len);
                                     expect(t, expected_plte_len == plte.used && plte_ok, error);
                                 }
                             case .sPLT:
-                                splt, splt_ok := png.splt(c);
                                 switch(file.file) {
                                 case "ps1n0g08", "ps1n2c16", "ps2n0g08", "ps2n2c16":
+                                    splt, splt_ok := png.splt(c);
+
                                     expected_splt_len  := u16(216);
                                     error  = fmt.tprintf("%v test %v sPLT length is %v, expected %v.", file.file, count, splt.used, expected_splt_len);
                                     expect(t, expected_splt_len == splt.used && splt_ok, error);
@@ -1131,8 +1178,23 @@ run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
                                     expected_splt_name := "six-cube";
                                     error  = fmt.tprintf("%v test %v sPLT name is %v, expected %v.", file.file, count, splt.name, expected_splt_name);
                                     expect(t, expected_splt_name == splt.name && splt_ok, error);
+
+                                    png.splt_destroy(splt);
                                 }
-                                png.splt_destroy(splt);
+                            case .cHRM:
+                                chrm, chrm_ok := png.chrm(c);
+                                switch(file.file) {
+                                case "ccwn2c08":
+                                    expected_chrm := png.cHRM{
+                                        w = png.CIE_1931{x = 0.313, y = 0.329},
+                                        r = png.CIE_1931{x = 0.640, y = 0.330},
+                                        g = png.CIE_1931{x = 0.300, y = 0.600},
+                                        b = png.CIE_1931{x = 0.150, y = 0.060},
+                                    };
+                                    error  = fmt.tprintf("%v test %v cHRM is %v, expected %v.", file.file, count, chrm, expected_chrm);
+                                    expect(t, expected_chrm == chrm && chrm_ok, error);
+                                }
+
                             }
                         }
                     }
