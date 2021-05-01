@@ -90,12 +90,14 @@ PNG_Test :: struct {
     },
 }
 
-Default       :: image.Options{};
-Alpha_Add     :: image.Options{.alpha_add_if_missing};
-Premul_Drop   :: image.Options{.alpha_premultiply, .alpha_drop_if_present};
-Just_Drop     :: image.Options{.alpha_drop_if_present};
-Blend_BG      :: image.Options{.blend_background};
-Blend_BG_Keep :: image.Options{.blend_background, .alpha_add_if_missing};
+Default         :: image.Options{};
+Alpha_Add       :: image.Options{.alpha_add_if_missing};
+Premul_Drop     :: image.Options{.alpha_premultiply, .alpha_drop_if_present};
+Just_Drop       :: image.Options{.alpha_drop_if_present};
+Blend_BG        :: image.Options{.blend_background};
+Blend_BG_Keep   :: image.Options{.blend_background, .alpha_add_if_missing};
+Return_Metadata :: image.Options{.return_metadata};
+
 
 PNG_Dims    :: struct{
     width:     int,
@@ -960,34 +962,82 @@ PNG_ZLIB_Levels_Tests := []PNG_Test{
     {
         "z00n2c08", // color, no interlacing, compression level 0 (none)
         {
-            {Default,       OK, {32, 32, 3, 8}, 0x_f8f7_d651},
+            {Default,         OK, {32, 32, 3,  8}, 0x_f8f7_d651},
         },
     },
     {
         "z03n2c08", // color, no interlacing, compression level 3
         {
-            {Default,       OK, {32, 32, 3,  8}, 0x_f8f7_d651},
+            {Default,         OK, {32, 32, 3,  8}, 0x_f8f7_d651},
         },
     },
     {
         "z06n2c08", // color, no interlacing, compression level 6 (default)
         {
-            {Default,       OK, {32, 32, 3,  8}, 0x_f8f7_d651},
+            {Default,         OK, {32, 32, 3,  8}, 0x_f8f7_d651},
         },
     },
     {
         "z09n2c08", // color, no interlacing, compression level 9 (maximum)
         {
-            {Default,       OK, {32, 32, 3,  8}, 0x_f8f7_d651},
+            {Default,         OK, {32, 32, 3,  8}, 0x_f8f7_d651},
         },
     },
 };
+
+PNG_sPAL_Tests        := []PNG_Test{
+    /*
+        PngSuite - Additional palettes / PNG-files:
+
+            http://www.schaik.com/pngsuite/pngsuite_pal_png.html
+
+        This tests handling of sPAL chunks.
+    */
+
+    {
+        "pp0n2c16", // six-cube palette-chunk in true-color image
+        {
+            {Return_Metadata, OK, {32, 32, 3, 16}, 0x_8ec6_de79},
+        },
+    },
+    {
+        "pp0n6a08", // six-cube palette-chunk in true-color+alpha image
+        {
+            {Return_Metadata, OK, {32, 32, 4,  8}, 0x_0ee0_5c61},
+        },
+    },
+    {
+        "ps1n0g08", // six-cube suggested palette (1 byte) in grayscale image
+        {
+            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_7e0a_8ab4},
+        },
+    },
+    {
+        "ps1n2c16", // six-cube suggested palette (1 byte) in true-color image
+        {
+            {Return_Metadata, OK, {32, 32, 3, 16}, 0x_8ec6_de79},
+        },
+    },
+    {
+        "ps2n0g08", // six-cube suggested palette (2 bytes) in grayscale image
+        {
+            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_7e0a_8ab4},
+        },
+    },
+    {
+        "ps2n2c16", // six-cube suggested palette (2 bytes) in true-color image
+        {
+            {Return_Metadata, OK, {32, 32, 3, 16}, 0x_8ec6_de79},
+        },
+    },
+};
+
 
 @test
 png_test :: proc(t: ^testing.T) {
 
     total_tests    := 0;
-    total_expected := 185;
+    total_expected := 191;
 
     PNG_Suites := [][]PNG_Test{
         Basic_PNG_Tests,
@@ -998,6 +1048,7 @@ png_test :: proc(t: ^testing.T) {
         PNG_Filter_Tests,
         PNG_Varied_IDAT_Tests,
         PNG_ZLIB_Levels_Tests,
+        PNG_sPAL_Tests,
     };
 
     for suite in PNG_Suites {
@@ -1051,7 +1102,39 @@ run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
 
                 if .return_metadata in test.options {
                     if v, ok := img.sidecar.(png.Info); ok {
-                        fmt.println(v.chunks);
+                        for c in v.chunks {
+                            #partial switch(c.header.type) {
+                            case .gAMA:
+                                gamma := png.gamma(c);
+                                switch(file.file) {
+                                case "pp0n2c16", "pp0n6a08":
+                                    expected_gamma := f32(1.0);
+                                    error  = fmt.tprintf("%v test %v gAMA is %v, expected %v.", file.file, count, gamma, expected_gamma);
+                                    expect(t, gamma == expected_gamma, error);
+                                }
+                            case .PLTE:
+                                plte, plte_ok := png.plte(c);
+                                switch(file.file) {
+                                case "pp0n2c16", "pp0n6a08":
+                                    expected_plte_len := u16(216);
+                                    error  = fmt.tprintf("%v test %v PLTE length is %v, expected %v.", file.file, count, plte.used, expected_plte_len);
+                                    expect(t, expected_plte_len == plte.used && plte_ok, error);
+                                }
+                            case .sPLT:
+                                splt, splt_ok := png.splt(c);
+                                switch(file.file) {
+                                case "ps1n0g08", "ps1n2c16", "ps2n0g08", "ps2n2c16":
+                                    expected_splt_len  := u16(216);
+                                    error  = fmt.tprintf("%v test %v sPLT length is %v, expected %v.", file.file, count, splt.used, expected_splt_len);
+                                    expect(t, expected_splt_len == splt.used && splt_ok, error);
+
+                                    expected_splt_name := "six-cube";
+                                    error  = fmt.tprintf("%v test %v sPLT name is %v, expected %v.", file.file, count, splt.name, expected_splt_name);
+                                    expect(t, expected_splt_name == splt.name && splt_ok, error);
+                                }
+                                png.splt_destroy(splt);
+                            }
+                        }
                     }
                 }
 
