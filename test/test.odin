@@ -104,7 +104,7 @@ PNG_Dims    :: struct{
     depth:     u8,
 }
 
-Basic_PNG_Tests := []PNG_Test{
+Basic_PNG_Tests      := []PNG_Test{
     /*
         Basic format tests:
             http://www.schaik.com/pngsuite/pngsuite_bas_png.html
@@ -335,7 +335,7 @@ Interlaced_PNG_Tests := []PNG_Test{
     },
 };
 
-Odd_Sized_PNG_Tests := []PNG_Test{
+Odd_Sized_PNG_Tests  := []PNG_Test{
     /*
         PngSuite - Odd sizes / PNG-files:
             http://www.schaik.com/pngsuite/pngsuite_siz_png.html
@@ -561,7 +561,7 @@ Odd_Sized_PNG_Tests := []PNG_Test{
     },
 };
 
-bKGD_PNG_Tests := []PNG_Test{
+PNG_bKGD_Tests       := []PNG_Test{
     /*
         PngSuite - Background colors / PNG-files:
             http://www.schaik.com/pngsuite/pngsuite_bck_png.html
@@ -648,13 +648,13 @@ bKGD_PNG_Tests := []PNG_Test{
     },
 };
 
-tRNS_PNG_Tests := []PNG_Test{
+PNG_tRNS_Tests       := []PNG_Test{
     /*
-        PngSuite - Background colors / PNG-files:
-            http://www.schaik.com/pngsuite/pngsuite_bck_png.html
+        PngSuite - Transparency / PNG-files:
+            http://www.schaik.com/pngsuite/pngsuite_trn_png.html
 
-        This tests PNGs with and without a bKGD chunk and how we handle
-        blending the background.
+        This tests PNGs with and without a tRNS chunk and how we handle
+        keyed transparency.
     */
 
     {
@@ -810,18 +810,100 @@ tRNS_PNG_Tests := []PNG_Test{
     },
 };
 
+PNG_Filter_Tests     := []PNG_Test{
+    /*
+        PngSuite - Image filtering / PNG-files:
+
+            http://www.schaik.com/pngsuite/pngsuite_fil_png.html
+
+        This tests PNGs filters.
+    */
+
+    {
+        "f00n0g08", // grayscale, no interlacing, filter-type 0
+        {
+            {Default,       OK, {32, 32, 3,  8}, 0x_3f6b_9bc5},
+        },
+    },
+    {
+        "f00n2c08", // color, no interlacing, filter-type 0
+        {
+            {Default,       OK, {32, 32, 3,  8}, 0x_3f1d_66ad},
+        },
+
+    },
+    {
+        "f01n0g08", // grayscale, no interlacing, filter-type 1
+        {
+            {Default,       OK, {32, 32, 3,  8}, 0x_0ff8_9d6c},
+        },
+
+    },
+    {
+        "f01n2c08", // color, no interlacing, filter-type 1
+        {
+            {Default,       OK, {32, 32, 3,  8}, 0x_11c1_b27e},
+        },
+    },
+    {
+        "f02n0g08", // grayscale, no interlacing, filter-type 2
+        {
+            {Default,       OK, {32, 32, 3,  8}, 0x_a86b_4c1d},
+        },
+    },
+    {
+        "f02n2c08", // color, no interlacing, filter-type 2
+        {
+            {Default,       OK, {32, 32, 3,  8}, 0x_7f1c_a785},
+        },
+    },
+    {
+        "f03n0g08", // grayscale, no interlacing, filter-type 3
+        {
+            {Default,       OK, {32, 32, 3,  8}, 0x_66de_99f1},
+        },
+    },
+    {
+        "f03n2c08", // color, no interlacing, filter-type 3
+        {
+            {Default,       OK, {32, 32, 3,  8}, 0x_3164_5d89},
+        },
+    },
+    {
+        "f04n0g08", // grayscale, no interlacing, filter-type 4
+        {
+            {Default,       OK, {32, 32, 3,  8}, 0x_f655_bb7d},
+        },
+    },
+    {
+        "f04n2c08", // color, no interlacing, filter-type 4
+        {
+            {Default,       OK, {32, 32, 3,  8}, 0x_7705_6a6f},
+        },
+    },
+    {
+        "f99n0g04", // bit-depth 4, filter changing per scanline
+        {
+            {Default,       OK, {32, 32, 3,  8}, 0x_d302_6ad9},
+        },
+    },
+
+
+};
+
 @test
 png_test :: proc(t: ^testing.T) {
 
     total_tests    := 0;
-    total_expected := 162;
+    total_expected := 173;
 
     PNG_Suites := [][]PNG_Test{
         Basic_PNG_Tests,
         Interlaced_PNG_Tests,
         Odd_Sized_PNG_Tests,
-        bKGD_PNG_Tests,
-        tRNS_PNG_Tests,
+        PNG_bKGD_Tests,
+        PNG_tRNS_Tests,
+        PNG_Filter_Tests,
     };
 
     for suite in PNG_Suites {
@@ -866,7 +948,7 @@ run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
                 passed &= test.dims == dims;
 
                 hash   := hash.crc32(pixels);
-                error  = fmt.tprintf("%v hash is %08x, expected %08x.", file.file, hash, test.hash);
+                error  = fmt.tprintf("%v test %v hash is %08x, expected %08x.", file.file, count, hash, test.hash);
                 expect(t, test.hash == hash, error);
 
                 passed &= test.hash == hash;
