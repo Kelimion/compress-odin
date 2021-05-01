@@ -90,10 +90,11 @@ PNG_Test :: struct {
     },
 }
 
-Default     :: image.Options{};
-Alpha_Add   :: image.Options{.alpha_add_if_missing};
-Premul_Drop :: image.Options{.alpha_premultiply, .alpha_drop_if_present};
-Blend_BG    :: image.Options{.blend_background};
+Default       :: image.Options{};
+Alpha_Add     :: image.Options{.alpha_add_if_missing};
+Premul_Drop   :: image.Options{.alpha_premultiply, .alpha_drop_if_present};
+Blend_BG      :: image.Options{.blend_background};
+Blend_BG_Keep :: image.Options{.blend_background, .alpha_add_if_missing};
 
 PNG_Dims    :: struct{
     width:     int,
@@ -581,26 +582,76 @@ Background_PNG_Tests := []PNG_Test{
         {
             {Default,     OK, {32, 32, 4, 16}, 0x_3000_e35c},
             // No background, therefore no background blending and 3 channels.
-
-            // TODO: Look at this case. Why does it look different when there's no bKGD?
             {Blend_BG,    OK, {32, 32, 4, 16}, 0x_3000_e35c},
         },
     },
-
-// bgan6a08 - 3x8 bits rgb color, alpha, no background chunk
-// bgan6a16 - 3x16 bits rgb color, alpha, no background chunk
-// bgbn4a08 - 8 bit grayscale, alpha, black background chunk
-// bggn4a16 - 16 bit grayscale, alpha, gray background chunk
-// bgwn6a08 - 3x8 bits rgb color, alpha, white background chunk
-// bgyn6a16 - 3x16 bits rgb color, alpha, yellow background chunk
-
+    {
+        "bgan6a08", // 3x8 bits rgb color, alpha, no background chunk
+        {
+            {Default,     OK, {32, 32, 4,  8}, 0x_a74d_f32c},
+            // No background, therefore no background blending and 3 channels.
+            {Blend_BG,    OK, {32, 32, 4,  8}, 0x_a74d_f32c},
+        },
+    },
+    {
+        "bgan6a16", // 3x16 bits rgb color, alpha, no background chunk
+        {
+            {Default,     OK, {32, 32, 4, 16}, 0x_087b_e531},
+            // No background, therefore no background blending and 3 channels.
+            {Blend_BG,    OK, {32, 32, 4, 16}, 0x_087b_e531},
+        },
+    },
+    {
+        "bgbn4a08", // 8 bit grayscale, alpha, black background chunk
+        {
+            {Default,       OK, {32, 32, 4,  8}, 0x_905d_5b60},
+            {Blend_BG,      OK, {32, 32, 3,  8}, 0x_8c36_b12c},
+            /*
+                Blend with background but keep useless alpha channel now set to 255.
+            */
+            {Blend_BG_Keep, OK, {32, 32, 4,  8}, 0x_d4a2_3649},
+        },
+    },
+    {
+        "bggn4a16", // 16 bit grayscale, alpha, gray background chunk
+        {
+            {Default,       OK, {32, 32, 4, 16}, 0x_3000_e35c},
+            {Blend_BG,      OK, {32, 32, 3, 16}, 0x_0b49_0dc1},
+            /*
+                Blend with background but keep useless alpha channel.
+            */
+            {Blend_BG_Keep, OK, {32, 32, 4, 16}, 0x_073f_eb13},
+        },
+    },
+    {
+        "bgwn6a08", // 3x8 bits rgb color, alpha, white background chunk
+        {
+            {Default,       OK, {32, 32, 4,  8}, 0x_a74d_f32c},
+            {Blend_BG,      OK, {32, 32, 3,  8}, 0x_b60d_d910},
+            /*
+                Blend with background but keep useless alpha channel.
+            */
+            {Blend_BG_Keep, OK, {32, 32, 4,  8}, 0x_01ce_2ec6},
+        },
+    },
+    {
+        "bgyn6a16", // 3x16 bits rgb color, alpha, yellow background chunk
+        {
+            {Default,       OK, {32, 32, 4, 16}, 0x_087b_e531},
+            {Blend_BG,      OK, {32, 32, 3, 16}, 0x_1a16_7d87},
+            /*
+                Blend with background but keep useless alpha channel.
+            */
+            {Blend_BG_Keep, OK, {32, 32, 4, 16}, 0x_4d73_9955},
+        },
+    },
 };
 
 @test
 png_test :: proc(t: ^testing.T) {
 
     total_tests    := 0;
-    total_expected := 100;
+    total_expected := 116;
 
     PNG_Suites := [][]PNG_Test{
         Basic_PNG_Tests,
@@ -683,30 +734,25 @@ run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
 // Crappy PPM writer used during testing. Don't use in production.
 write_image_as_ppm :: proc(filename: string, image: ^image.Image) -> (success: bool) {
 
-    // _bg :: proc(bg: Maybe([3]u16), x, y: int, high := true) -> (res: [3]u16) {
-    //     if v, ok := bg.?; ok {
-    //         res = v;
-    //     } else {
-    //         if high {
-    //             l := u16(30 * 256 + 30);
+    _bg :: proc(x, y: int, high := true) -> (res: [3]u16) {
+        if high {
+            l := u16(30 * 256 + 30);
 
-    //             if (x & 4 == 0) ~ (y & 4 == 0) {
-    //                 res = [3]u16{l, 0, l};
-    //             } else {
-    //                 res = [3]u16{l >> 1, 0, l >> 1};
-    //             }
-    //         } else {
-    //             if (x & 4 == 0) ~ (y & 4 == 0) {
-    //                 res = [3]u16{30, 30, 30};
-    //             } else {
-    //                 res = [3]u16{15, 15, 15};
-    //             }
-    //         }
-    //     }
-    //     return;
-    // }
+            if (x & 4 == 0) ~ (y & 4 == 0) {
+                res = [3]u16{l, l, l};
+            } else {
+                res = [3]u16{l >> 1, l >> 1, l >> 1};
+            }
+        } else {
+            if (x & 4 == 0) ~ (y & 4 == 0) {
+                res = [3]u16{30, 30, 30};
+            } else {
+                res = [3]u16{15, 15, 15};
+            }
+        }
+        return;
+    }
 
-    // profiler.timed_proc();
     using image;
     using os;
 
@@ -824,9 +870,13 @@ write_image_as_ppm :: proc(filename: string, image: ^image.Image) -> (success: b
                 p16 := mem.slice_data_cast([]u16be, pix);
                 o16 := mem.slice_data_cast([]u16be, op.buf[:]);
 
-                #no_bounds_check for len(p16) != 0 {
+                i := 0;
+                for len(p16) > 0 {
+                    i += 1;
+                    x  := i  % width;
+                    y  := i / width;
+                    bg := _bg(x, y, false);
 
-                    bg := [3]u16{};
                     r     := f32(p16[0]);
                     g     := f32(p16[1]);
                     b     := f32(p16[2]);
@@ -850,8 +900,8 @@ write_image_as_ppm :: proc(filename: string, image: ^image.Image) -> (success: b
 
                     x := (i / 4)  % width;
                     y := i / width / 4;
-
-                    bgcol := [3]u8{};
+                    _b := _bg(x, y, false);
+                    bgcol := [3]u8{u8(_b[0]), u8(_b[1]), u8(_b[2])};
 
                     r := f32(pix[i]);
                     g := f32(pix[i+1]);
