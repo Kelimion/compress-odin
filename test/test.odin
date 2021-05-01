@@ -93,6 +93,7 @@ PNG_Test :: struct {
 Default       :: image.Options{};
 Alpha_Add     :: image.Options{.alpha_add_if_missing};
 Premul_Drop   :: image.Options{.alpha_premultiply, .alpha_drop_if_present};
+Just_Drop     :: image.Options{.alpha_drop_if_present};
 Blend_BG      :: image.Options{.blend_background};
 Blend_BG_Keep :: image.Options{.blend_background, .alpha_add_if_missing};
 
@@ -560,7 +561,7 @@ Odd_Sized_PNG_Tests := []PNG_Test{
     },
 };
 
-Background_PNG_Tests := []PNG_Test{
+bKGD_PNG_Tests := []PNG_Test{
     /*
         PngSuite - Background colors / PNG-files:
             http://www.schaik.com/pngsuite/pngsuite_bck_png.html
@@ -647,17 +648,180 @@ Background_PNG_Tests := []PNG_Test{
     },
 };
 
+tRNS_PNG_Tests := []PNG_Test{
+    /*
+        PngSuite - Background colors / PNG-files:
+            http://www.schaik.com/pngsuite/pngsuite_bck_png.html
+
+        This tests PNGs with and without a bKGD chunk and how we handle
+        blending the background.
+    */
+
+    {
+        "tbbn0g04", // transparent, black background chunk
+        {
+            {Default,       OK, {32, 32, 4,  8}, 0x_5c8e_af83},
+            {Blend_BG,      OK, {32, 32, 3,  8}, 0x_9b95_ca37},
+            /*
+                Blend with background but keep useless alpha channel now set to 255.
+            */
+            {Blend_BG_Keep, OK, {32, 32, 4,  8}, 0x_5ea6_fd32},
+        },
+    },
+    {
+        "tbbn2c16", // transparent, blue background chunk
+        {
+            {Default,       OK, {32, 32, 4, 16}, 0x_07fe_8090},
+            {Blend_BG,      OK, {32, 32, 3, 16}, 0x_5863_8fa2},
+            /*
+                Blend with background but keep useless alpha channel now set to 65535.
+            */
+            {Blend_BG_Keep, OK, {32, 32, 4, 16}, 0x_be56_b8fa},
+        },
+    },
+    {
+        "tbbn3p08", // transparent, black background chunk
+        {
+            {Default,       OK, {32, 32, 4,  8}, 0x_9d56_cd67},
+            {Blend_BG,      OK, {32, 32, 3,  8}, 0x_8071_0060},
+            /*
+                Blend with background but keep useless alpha channel now set to 255.
+            */
+            {Blend_BG_Keep, OK, {32, 32, 4,  8}, 0x_c821_11f1},
+        },
+    },
+    {
+        "tbgn2c16", // transparent, green background chunk
+        {
+            {Default,       OK, {32, 32, 4, 16}, 0x_07fe_8090},
+            {Blend_BG,      OK, {32, 32, 3, 16}, 0x_70da_708a},
+            /*
+                Blend with background but keep useless alpha channel now set to 65535.
+            */
+            {Blend_BG_Keep, OK, {32, 32, 4, 16}, 0x_97b3_a190},
+        },
+    },
+    {
+        "tbbn3p08", // transparent, black background chunk
+        {
+            {Default,       OK, {32, 32, 4,  8}, 0x_9d56_cd67},
+            {Blend_BG,      OK, {32, 32, 3,  8}, 0x_8071_0060},
+            /*
+                Blend with background but keep useless alpha channel now set to 255.
+            */
+            {Blend_BG_Keep, OK, {32, 32, 4,  8}, 0x_c821_11f1},
+        },
+    },
+    {
+        "tbgn3p08", // transparent, light-gray background chunk
+        {
+            {Default,       OK, {32, 32, 4,  8}, 0x_9d56_cd67},
+            {Blend_BG,      OK, {32, 32, 3,  8}, 0x_078b_74c4},
+            /*
+                Blend with background but keep useless alpha channel now set to 255.
+            */
+            {Blend_BG_Keep, OK, {32, 32, 4,  8}, 0x_d103_068d},
+        },
+    },
+    {
+        "tbrn2c08", // transparent, red background chunk
+        {
+            {Default,       OK, {32, 32, 4,  8}, 0x_0370_ef89},
+            {Blend_BG,      OK, {32, 32, 3,  8}, 0x_6f68_a445},
+            /*
+                Blend with background but keep useless alpha channel now set to 255.
+            */
+            {Blend_BG_Keep, OK, {32, 32, 4,  8}, 0x_2610_a9b7},
+        },
+    },
+    {
+        "tbwn0g16", // transparent, white background chunk
+        {
+            {Default,       OK, {32, 32, 4, 16}, 0x_5386_656a},
+            {Blend_BG,      OK, {32, 32, 3, 16}, 0x_6bdd_8c69},
+            /*
+                Blend with background but keep useless alpha channel now set to 65535.
+            */
+            {Blend_BG_Keep, OK, {32, 32, 4, 16}, 0x_1157_5f08},
+        },
+    },
+    {
+        "tbwn3p08", // transparent, white background chunk
+        {
+            {Default,       OK, {32, 32, 4,  8}, 0x_9d56_cd67},
+            {Blend_BG,      OK, {32, 32, 3,  8}, 0x_4476_4e96},
+            /*
+                Blend with background but keep useless alpha channel now set to 255.
+            */
+            {Blend_BG_Keep, OK, {32, 32, 4,  8}, 0x_dd92_0d33},
+        },
+    },
+    {
+        "tbyn3p08", // transparent, yellow background chunk
+        {
+            {Default,       OK, {32, 32, 4,  8}, 0x_9d56_cd67},
+            {Blend_BG,      OK, {32, 32, 3,  8}, 0x_18b9_da39},
+            /*
+                Blend with background but keep useless alpha channel now set to 255.
+            */
+            {Blend_BG_Keep, OK, {32, 32, 4,  8}, 0x_b1d4_5c1e},
+        },
+    },
+    {
+        "tp0n0g08", // not transparent for reference (logo on gray)
+        {
+            {Default,       OK, {32, 32, 3,  8}, 0x_dfa9_515c},
+            {Blend_BG,      OK, {32, 32, 3,  8}, 0x_dfa9_515c},
+            {Blend_BG_Keep, OK, {32, 32, 4,  8}, 0x_5796_5874},
+        },
+    },
+    {
+        "tp0n2c08", // not transparent for reference (logo on gray)
+        {
+            {Default,       OK, {32, 32, 3,  8}, 0x_b426_b350},
+            {Blend_BG,      OK, {32, 32, 3,  8}, 0x_b426_b350},
+            {Blend_BG_Keep, OK, {32, 32, 4,  8}, 0x_679d_24b4},
+        },
+    },
+    {
+        "tp0n3p08", // not transparent for reference (logo on gray)
+        {
+            {Default,       OK, {32, 32, 3,  8}, 0x_1549_3236},
+            {Blend_BG,      OK, {32, 32, 3,  8}, 0x_1549_3236},
+            {Blend_BG_Keep, OK, {32, 32, 4,  8}, 0x_130a_a165},
+        },
+    },
+    {
+        "tp1n3p08", // transparent, but no background chunk
+        {
+            {Default,       OK, {32, 32, 4,  8}, 0x_9d56_cd67},
+            {Blend_BG,      OK, {32, 32, 4,  8}, 0x_9d56_cd67},
+            {Blend_BG_Keep, OK, {32, 32, 4,  8}, 0x_9d56_cd67},
+        },
+    },
+    {
+        "tm3n3p02", // multiple levels of transparency, 3 entries
+        {
+            {Default,       OK, {32, 32, 4,  8}, 0x_e7da_a7f5},
+            {Blend_BG,      OK, {32, 32, 4,  8}, 0x_e7da_a7f5},
+            {Blend_BG_Keep, OK, {32, 32, 4,  8}, 0x_e7da_a7f5},
+            {Just_Drop,     OK, {32, 32, 3,  8}, 0x_e7f1_a455},
+        },
+    },
+};
+
 @test
 png_test :: proc(t: ^testing.T) {
 
     total_tests    := 0;
-    total_expected := 116;
+    total_expected := 162;
 
     PNG_Suites := [][]PNG_Test{
         Basic_PNG_Tests,
         Interlaced_PNG_Tests,
         Odd_Sized_PNG_Tests,
-        Background_PNG_Tests,
+        bKGD_PNG_Tests,
+        tRNS_PNG_Tests,
     };
 
     for suite in PNG_Suites {
@@ -676,9 +840,6 @@ is_kind :: proc(u: $U, x: $V) -> bool where U == compress.Error {
 run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
     for file in suite {
         test_suite_path := "PNG test suite";
-
-        img:      ^image.Image;
-        err:       compress.Error;
 
         test_file := fmt.tprintf("%v/%v.png", test_suite_path, file.file);
 
@@ -875,7 +1036,7 @@ write_image_as_ppm :: proc(filename: string, image: ^image.Image) -> (success: b
                     i += 1;
                     x  := i  % width;
                     y  := i / width;
-                    bg := _bg(x, y, false);
+                    bg := _bg(x, y, true);
 
                     r     := f32(p16[0]);
                     g     := f32(p16[1]);
