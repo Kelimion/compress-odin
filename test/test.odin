@@ -195,7 +195,7 @@ Basic_PNG_Tests := []PNG_Test{
     {
         "basn4a16", // 16 bit grayscale + 16 bit alpha-channel
         {
-            {Default,     OK, {32, 32, 4, 16}, 0x_224f_48b2},
+            {Default,     OK, {32, 32, 4, 16}, 0x_3000_e35c},
             {Premul_Drop, OK, {32, 32, 3, 16}, 0x_0276_254b},
         },
     },
@@ -313,7 +313,7 @@ Interlaced_PNG_Tests := []PNG_Test{
     {
         "basi4a16", // 16 bit grayscale + 16 bit alpha-channel
         {
-            {Default,     OK, {32, 32, 4, 16}, 0x_224f_48b2},
+            {Default,     OK, {32, 32, 4, 16}, 0x_3000_e35c},
             {Premul_Drop, OK, {32, 32, 3, 16}, 0x_0276_254b},
         },
     },
@@ -579,7 +579,7 @@ Background_PNG_Tests := []PNG_Test{
     {
         "bgai4a16", // 16 bit grayscale, alpha, no background chunk, interlaced
         {
-            {Default,     OK, {32, 32, 4, 16}, 0x_224f_48b2},
+            {Default,     OK, {32, 32, 4, 16}, 0x_3000_e35c},
             // No background, therefore no background blending and 3 channels.
 
             // TODO: Look at this case. Why does it look different when there's no bKGD?
@@ -683,29 +683,28 @@ run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
 // Crappy PPM writer used during testing. Don't use in production.
 write_image_as_ppm :: proc(filename: string, image: ^image.Image) -> (success: bool) {
 
-    _bg :: proc(bg: Maybe([3]u16), x, y: int, high := true) -> (res: [3]u16) {
-        if v, ok := bg.?; ok {
-            res = v;
-            fmt.println(res);
-        } else {
-            if high {
-                l := u16(30 * 256 + 30);
+    // _bg :: proc(bg: Maybe([3]u16), x, y: int, high := true) -> (res: [3]u16) {
+    //     if v, ok := bg.?; ok {
+    //         res = v;
+    //     } else {
+    //         if high {
+    //             l := u16(30 * 256 + 30);
 
-                if (x & 4 == 0) ~ (y & 4 == 0) {
-                    res = [3]u16{l, 0, l};
-                } else {
-                    res = [3]u16{l >> 1, 0, l >> 1};
-                }
-            } else {
-                if (x & 4 == 0) ~ (y & 4 == 0) {
-                    res = [3]u16{30, 30, 30};
-                } else {
-                    res = [3]u16{15, 15, 15};
-                }
-            }
-        }
-        return;
-    }
+    //             if (x & 4 == 0) ~ (y & 4 == 0) {
+    //                 res = [3]u16{l, 0, l};
+    //             } else {
+    //                 res = [3]u16{l >> 1, 0, l >> 1};
+    //             }
+    //         } else {
+    //             if (x & 4 == 0) ~ (y & 4 == 0) {
+    //                 res = [3]u16{30, 30, 30};
+    //             } else {
+    //                 res = [3]u16{15, 15, 15};
+    //             }
+    //         }
+    //     }
+    //     return;
+    // }
 
     // profiler.timed_proc();
     using image;
@@ -827,7 +826,7 @@ write_image_as_ppm :: proc(filename: string, image: ^image.Image) -> (success: b
 
                 #no_bounds_check for len(p16) != 0 {
 
-                    bg := _bg(img.background, 0, 0);
+                    bg := [3]u16{};
                     r     := f32(p16[0]);
                     g     := f32(p16[1]);
                     b     := f32(p16[2]);
@@ -852,8 +851,7 @@ write_image_as_ppm :: proc(filename: string, image: ^image.Image) -> (success: b
                     x := (i / 4)  % width;
                     y := i / width / 4;
 
-                    _b := _bg(img.background, x, y, false);
-                    bgcol := [3]u8{u8(_b[0]), u8(_b[1]), u8(_b[2])};
+                    bgcol := [3]u8{};
 
                     r := f32(pix[i]);
                     g := f32(pix[i+1]);
