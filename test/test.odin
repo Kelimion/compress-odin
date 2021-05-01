@@ -104,7 +104,7 @@ PNG_Dims    :: struct{
     depth:     u8,
 }
 
-Basic_PNG_Tests      := []PNG_Test{
+Basic_PNG_Tests       := []PNG_Test{
     /*
         Basic format tests:
             http://www.schaik.com/pngsuite/pngsuite_bas_png.html
@@ -217,7 +217,7 @@ Basic_PNG_Tests      := []PNG_Test{
     },
 };
 
-Interlaced_PNG_Tests := []PNG_Test{
+Interlaced_PNG_Tests  := []PNG_Test{
     /*
         Interlaced format tests:
             http://www.schaik.com/pngsuite/pngsuite_int_png.html
@@ -335,7 +335,7 @@ Interlaced_PNG_Tests := []PNG_Test{
     },
 };
 
-Odd_Sized_PNG_Tests  := []PNG_Test{
+Odd_Sized_PNG_Tests   := []PNG_Test{
     /*
         PngSuite - Odd sizes / PNG-files:
             http://www.schaik.com/pngsuite/pngsuite_siz_png.html
@@ -561,7 +561,7 @@ Odd_Sized_PNG_Tests  := []PNG_Test{
     },
 };
 
-PNG_bKGD_Tests       := []PNG_Test{
+PNG_bKGD_Tests        := []PNG_Test{
     /*
         PngSuite - Background colors / PNG-files:
             http://www.schaik.com/pngsuite/pngsuite_bck_png.html
@@ -648,7 +648,7 @@ PNG_bKGD_Tests       := []PNG_Test{
     },
 };
 
-PNG_tRNS_Tests       := []PNG_Test{
+PNG_tRNS_Tests        := []PNG_Test{
     /*
         PngSuite - Transparency / PNG-files:
             http://www.schaik.com/pngsuite/pngsuite_trn_png.html
@@ -810,7 +810,7 @@ PNG_tRNS_Tests       := []PNG_Test{
     },
 };
 
-PNG_Filter_Tests     := []PNG_Test{
+PNG_Filter_Tests      := []PNG_Test{
     /*
         PngSuite - Image filtering / PNG-files:
 
@@ -887,15 +887,107 @@ PNG_Filter_Tests     := []PNG_Test{
             {Default,       OK, {32, 32, 3,  8}, 0x_d302_6ad9},
         },
     },
+};
 
+PNG_Varied_IDAT_Tests := []PNG_Test{
+    /*
+        PngSuite - Chunk ordering / PNG-files:
 
+            http://www.schaik.com/pngsuite/pngsuite_ord_png.html
+
+        This tests IDAT chunks of varying sizes.
+    */
+
+    {
+        "oi1n0g16", // grayscale mother image with 1 idat-chunk
+        {
+            {Default,       OK, {32, 32, 3, 16}, 0x_d6ae_7df7},
+        },
+    },
+    {
+        "oi1n2c16", // color mother image with 1 idat-chunk
+        {
+            {Default,       OK, {32, 32, 3, 16}, 0x_8ec6_de79},
+        },
+    },
+    {
+        "oi2n0g16", // grayscale image with 2 idat-chunks
+        {
+            {Default,       OK, {32, 32, 3, 16}, 0x_d6ae_7df7},
+        },
+    },
+    {
+        "oi2n2c16", // color image with 2 idat-chunks
+        {
+            {Default,       OK, {32, 32, 3, 16}, 0x_8ec6_de79},
+        },
+    },
+    {
+        "oi4n0g16", // grayscale image with 4 unequal sized idat-chunks
+        {
+            {Default,       OK, {32, 32, 3, 16}, 0x_d6ae_7df7},
+        },
+    },
+    {
+        "oi4n2c16", // color image with 4 unequal sized idat-chunks
+        {
+            {Default,       OK, {32, 32, 3, 16}, 0x_8ec6_de79},
+        },
+    },
+    {
+        "oi9n0g16", // grayscale image with all idat-chunks length one
+        {
+            {Default,       OK, {32, 32, 3, 16}, 0x_d6ae_7df7},
+        },
+    },
+    {
+        "oi9n2c16", // color image with all idat-chunks length one
+        {
+            {Default,       OK, {32, 32, 3, 16}, 0x_8ec6_de79},
+        },
+    },
+};
+
+PNG_ZLIB_Levels_Tests := []PNG_Test{
+    /*
+        PngSuite - Zlib compression / PNG-files:
+
+            http://www.schaik.com/pngsuite/pngsuite_zlb_png.html
+
+        This tests varying levels of ZLIB compression.
+    */
+
+    {
+        "z00n2c08", // color, no interlacing, compression level 0 (none)
+        {
+            {Default,       OK, {32, 32, 3, 8}, 0x_f8f7_d651},
+        },
+    },
+    {
+        "z03n2c08", // color, no interlacing, compression level 3
+        {
+            {Default,       OK, {32, 32, 3,  8}, 0x_f8f7_d651},
+        },
+    },
+    {
+        "z06n2c08", // color, no interlacing, compression level 6 (default)
+        {
+            {Default,       OK, {32, 32, 3,  8}, 0x_f8f7_d651},
+        },
+    },
+    {
+        "z09n2c08", // color, no interlacing, compression level 9 (maximum)
+        {
+            {Default,       OK, {32, 32, 3,  8}, 0x_f8f7_d651},
+        },
+    },
 };
 
 @test
 png_test :: proc(t: ^testing.T) {
 
     total_tests    := 0;
-    total_expected := 173;
+    total_expected := 185;
 
     PNG_Suites := [][]PNG_Test{
         Basic_PNG_Tests,
@@ -904,6 +996,8 @@ png_test :: proc(t: ^testing.T) {
         PNG_bKGD_Tests,
         PNG_tRNS_Tests,
         PNG_Filter_Tests,
+        PNG_Varied_IDAT_Tests,
+        PNG_ZLIB_Levels_Tests,
     };
 
     for suite in PNG_Suites {
@@ -934,6 +1028,8 @@ run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
 
             error  := fmt.tprintf("%v failed with %v.", file.file, err);
             passed := is_kind(err, OK);
+            failed_to_load := !passed;
+
             expect(t, passed, error);
 
 
@@ -961,7 +1057,7 @@ run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
 
             }
 
-            if WRITE_PPM_ON_FAIL && !passed {
+            if WRITE_PPM_ON_FAIL && !passed && !failed_to_load {
                 testing.logf(t, "Test failed, writing ppm/%v-%v.ppm to help debug.\n", file.file, count);
                 output := fmt.tprintf("ppm/%v-%v.ppm", file.file, count);
                 write_image_as_ppm(output, img);
