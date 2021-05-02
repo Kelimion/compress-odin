@@ -1047,12 +1047,38 @@ PNG_Ancillary_Tests   := []PNG_Test{
             {Return_Metadata, OK, {32, 32, 3,  8}, 0x_61b6_9e8e},
         },
     },
+    {
+        "ccwn3p08", // chroma chunk w:0.3127,0.3290 r:0.64,0.33 g:0.30,0.60 b:0.15,0.06
+        {
+            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_2e1d_8ef1},
+        },
+    },
+    {
+        "cdfn2c08", // physical pixel dimensions, 8x32 flat pixels
+        {
+            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_99af_40a3},
+        },
+    },
+    // {
+    //     "cdhn2c08", // physical pixel dimensions, 32x8 high pixels
+    //     {
+    //         {Return_Metadata, OK, {32, 32, 3,  8}, 0x_2e1d_8ef1},
+    //     },
+    // },
+    // {
+    //     "cdsn2c08", // physical pixel dimensions, 8x8 square pixels
+    //     {
+    //         {Return_Metadata, OK, {32, 32, 3,  8}, 0x_2e1d_8ef1},
+    //     },
+    // },
+    // {
+    //     "cdun2c08", // physical pixel dimensions, 1000 pixels per 1 meter
+    //     {
+    //         {Return_Metadata, OK, {32, 32, 3,  8}, 0x_2e1d_8ef1},
+    //     },
+    // },
 
-// "ccwn3p08", // chroma chunk w:0.3127,0.3290 r:0.64,0.33 g:0.30,0.60 b:0.15,0.06
-// "cdfn2c08", // physical pixel dimensions, 8x32 flat pixels
-// "cdhn2c08", // physical pixel dimensions, 32x8 high pixels
-// "cdsn2c08", // physical pixel dimensions, 8x8 square pixels
-// "cdun2c08", // physical pixel dimensions, 1000 pixels per 1 meter
+
 // "ch1n3p04", // histogram 15 colors
 // "ch2n3p08", // histogram 256 colors
 // "cm0n0g04", // modification time, 01-jan-2000 12:34:56
@@ -1080,7 +1106,7 @@ PNG_Ancillary_Tests   := []PNG_Test{
 png_test :: proc(t: ^testing.T) {
 
     total_tests    := 0;
-    total_expected := 192;
+    total_expected := 193;
 
     PNG_Suites := [][]PNG_Test{
         Basic_PNG_Tests,
@@ -1182,9 +1208,9 @@ run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
                                     png.splt_destroy(splt);
                                 }
                             case .cHRM:
-                                chrm, chrm_ok := png.chrm(c);
                                 switch(file.file) {
-                                case "ccwn2c08":
+                                case "ccwn2c08", "ccwn3p08":
+                                    chrm, chrm_ok := png.chrm(c);
                                     expected_chrm := png.cHRM{
                                         w = png.CIE_1931{x = 0.3127, y = 0.3290},
                                         r = png.CIE_1931{x = 0.6400, y = 0.3300},
