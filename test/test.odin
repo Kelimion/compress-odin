@@ -99,7 +99,7 @@ Blend_BG_Keep   :: image.Options{.blend_background, .alpha_add_if_missing};
 Return_Metadata :: image.Options{.return_metadata};
 
 
-PNG_Dims    :: struct{
+PNG_Dims    :: struct #packed {
     width:     int,
     height:    int,
     channels:  int,
@@ -1071,12 +1071,12 @@ PNG_Ancillary_Tests   := []PNG_Test{
             {Return_Metadata, OK, { 8,  8, 3,  8}, 0x_82b2_6daf},
         },
     },
-    // {
-    //     "cdun2c08", // physical pixel dimensions, 1000 pixels per 1 meter
-    //     {
-    //         {Return_Metadata, OK, {32, 32, 3,  8}, 0x_2e1d_8ef1},
-    //     },
-    // },
+    {
+        "cdun2c08", // physical pixel dimensions, 1000 pixels per 1 meter
+        {
+            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_ee50_e3ca},
+        },
+    },
 
 
 // "ch1n3p04", // histogram 15 colors
@@ -1106,7 +1106,7 @@ PNG_Ancillary_Tests   := []PNG_Test{
 png_test :: proc(t: ^testing.T) {
 
     total_tests    := 0;
-    total_expected := 196;
+    total_expected := 197;
 
     PNG_Suites := [][]PNG_Test{
         Basic_PNG_Tests,
@@ -1158,14 +1158,25 @@ run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
                 // No point in running the other tests if it didn't load.
                 pixels := bytes.buffer_to_bytes(&img.pixels);
 
-                when false {
-                    // This struct compare fails at -opt:2
+                when true {
+                    // This struct compare fails at -opt:2 if PNG_Dims is not #packed.
 
                     dims   := PNG_Dims{img.width, img.height, img.channels, img.depth};
                     error  = fmt.tprintf("%v has %v, expected: %v.", file.file, dims, test.dims);
-                    expect(t, test.dims == dims, error);
 
-                    passed &= test.dims == dims;
+                    dims_pass := test.dims == dims;
+
+                    expect(t, dims_pass, error);
+
+                    // if !dims_pass {
+                    //     test_bytes := transmute([size_of(PNG_Dims)]u8)test.dims;
+                    //     dims_bytes := transmute([size_of(PNG_Dims)]u8)dims;
+                    //     fmt.printf("test: %v\n", test_bytes);
+                    //     fmt.printf("dims: %v\n", dims_bytes);
+                    //     fmt.println();
+                    // }
+
+                    passed &= dims_pass;
                 } else {
                     // This works even at -opt:2
 
@@ -1255,6 +1266,10 @@ run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
                                     expect(t, expected_phys == phys, error);
                                 case "cdsn2c08":
                                     expected_phys := png.pHYs{ppu_x = 1, ppu_y = 1, unit = .Unknown};
+                                    error  = fmt.tprintf("%v test %v cHRM is %v, expected %v.", file.file, count, phys, expected_phys);
+                                    expect(t, expected_phys == phys, error);
+                                case "cdun2c08":
+                                    expected_phys := png.pHYs{ppu_x = 1000, ppu_y = 1000, unit = .Meter};
                                     error  = fmt.tprintf("%v test %v cHRM is %v, expected %v.", file.file, count, phys, expected_phys);
                                     expect(t, expected_phys == phys, error);
                                 }
