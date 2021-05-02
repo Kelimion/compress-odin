@@ -1192,8 +1192,12 @@ PNG_Ancillary_Tests   := []PNG_Test{
             {Return_Metadata, OK, {32, 32, 3,  8}, 0x_5539_0861},
         },
     },
-
-// "exif2c08", // chunk with jpeg exif data
+    {
+        "exif2c08", // chunk with jpeg exif data
+        {
+            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_1a50_22ef},
+        },
+    },
 };
 
 Text_Title      :: "PngSuite";
@@ -1318,7 +1322,7 @@ Expected_Text := map[string]map[string]png.Text {
 png_test :: proc(t: ^testing.T) {
 
     total_tests    := 0;
-    total_expected := 216;
+    total_expected := 217;
 
     PNG_Suites := [][]PNG_Test{
         Basic_PNG_Tests,
@@ -1625,6 +1629,14 @@ run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
                                             expect(t, text.keyword_localized == test.keyword_localized && text_ok, error);
                                         }
                                     }
+                                }
+                            case .eXIf:
+                                if file.file == "exif2c08" { // chunk with jpeg exif data
+                                    exif, exif_ok := png.exif(c);
+                                    error      = fmt.tprintf("%v test %v eXIf byte order '%v', expected 'big_endian'.", file.file, count, exif.byte_order);
+                                    error_len := fmt.tprintf("%v test %v eXIf data length '%v', expected '%v'.", file.file, len(exif.data), 978);
+                                    expect(t, exif.byte_order == .big_endian && exif_ok, error);
+                                    expect(t, len(exif.data)  == 978         && exif_ok, error_len);
                                 }
                             }
                         }
