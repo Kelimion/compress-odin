@@ -340,7 +340,7 @@ Interlaced_PNG_Tests  := []PNG_Test{
 
 Odd_Sized_PNG_Tests   := []PNG_Test{
     /*
-        PngSuite - Odd sizes / PNG-files:
+"        PngSuite", // Odd sizes / PNG-files:
             http://www.schaik.com/pngsuite/pngsuite_siz_png.html
 
         This tests curious sizes with and without interlacing.
@@ -566,7 +566,7 @@ Odd_Sized_PNG_Tests   := []PNG_Test{
 
 PNG_bKGD_Tests        := []PNG_Test{
     /*
-        PngSuite - Background colors / PNG-files:
+"        PngSuite", // Background colors / PNG-files:
             http://www.schaik.com/pngsuite/pngsuite_bck_png.html
 
         This tests PNGs with and without a bKGD chunk and how we handle
@@ -653,7 +653,7 @@ PNG_bKGD_Tests        := []PNG_Test{
 
 PNG_tRNS_Tests        := []PNG_Test{
     /*
-        PngSuite - Transparency / PNG-files:
+        PngSuite - Transparency:
             http://www.schaik.com/pngsuite/pngsuite_trn_png.html
 
         This tests PNGs with and without a tRNS chunk and how we handle
@@ -815,7 +815,7 @@ PNG_tRNS_Tests        := []PNG_Test{
 
 PNG_Filter_Tests      := []PNG_Test{
     /*
-        PngSuite - Image filtering / PNG-files:
+        PngSuite - Image filtering:
 
             http://www.schaik.com/pngsuite/pngsuite_fil_png.html
 
@@ -894,7 +894,7 @@ PNG_Filter_Tests      := []PNG_Test{
 
 PNG_Varied_IDAT_Tests := []PNG_Test{
     /*
-        PngSuite - Chunk ordering / PNG-files:
+        PngSuite - Chunk ordering:
 
             http://www.schaik.com/pngsuite/pngsuite_ord_png.html
 
@@ -953,7 +953,7 @@ PNG_Varied_IDAT_Tests := []PNG_Test{
 
 PNG_ZLIB_Levels_Tests := []PNG_Test{
     /*
-        PngSuite - Zlib compression / PNG-files:
+        PngSuite - Zlib compression:
 
             http://www.schaik.com/pngsuite/pngsuite_zlb_png.html
 
@@ -988,7 +988,7 @@ PNG_ZLIB_Levels_Tests := []PNG_Test{
 
 PNG_sPAL_Tests        := []PNG_Test{
     /*
-        PngSuite - Additional palettes / PNG-files:
+        PngSuite - Additional palettes:
 
             http://www.schaik.com/pngsuite/pngsuite_pal_png.html
 
@@ -1035,7 +1035,7 @@ PNG_sPAL_Tests        := []PNG_Test{
 
 PNG_Ancillary_Tests   := []PNG_Test{
     /*
-        PngSuite - Ancillary chunks / PNG-files:
+        PngSuite" - Ancillary chunks:
 
             http://www.schaik.com/pngsuite/pngsuite_cnk_png.html
 
@@ -1200,6 +1200,105 @@ PNG_Ancillary_Tests   := []PNG_Test{
     },
 };
 
+
+Corrupt_PNG_Tests   := []PNG_Test{
+    /*
+        PngSuite - Corrupted files / PNG-files:
+
+            http://www.schaik.com/pngsuite/pngsuite_xxx_png.html
+
+        This test ensures corrupted PNGs are rejected.
+    */
+
+    {
+        "xs1n0g01", // signature byte 1 MSBit reset to zero
+        {
+            {Default, OK, {}, 0x_0000_0000},
+        },
+    },
+    {
+        "xs2n0g01", // signature byte 2 is a 'Q'
+        {
+            {Default, OK, {}, 0x_0000_0000},
+        },
+    },
+    {
+        "xs4n0g01", // signature byte 4 lowercase
+        {
+            {Default, OK, {}, 0x_0000_0000},
+        },
+    },
+    {
+        "xs7n0g01", // 7th byte a space instead of control-Z
+        {
+            {Default, OK, {}, 0x_0000_0000},
+        },
+    },
+    {
+        "xcrn0g04", // added cr bytes
+        {
+            {Default, OK, {}, 0x_0000_0000},
+        },
+    },
+    {
+        "xlfn0g04", // added lf bytes
+        {
+            {Default, OK, {}, 0x_0000_0000},
+        },
+    },
+    {
+        "xhdn0g08", // incorrect IHDR checksum
+        {
+            {Default, OK, {}, 0x_0000_0000},
+        },
+    },
+    {
+        "xc1n0g08", // color type 1
+        {
+            {Default, OK, {}, 0x_0000_0000},
+        },
+    },
+    {
+        "xc9n2c08", // color type 9
+        {
+            {Default, OK, {}, 0x_0000_0000},
+        },
+    },
+    {
+        "xd0n2c08", // bit-depth 0
+        {
+            {Default, OK, {}, 0x_0000_0000},
+        },
+    },
+    {
+        "xd3n2c08", // bit-depth 3
+        {
+            {Default, OK, {}, 0x_0000_0000},
+        },
+    },
+    {
+        "xd9n2c08", // bit-depth 99
+        {
+            {Default, OK, {}, 0x_0000_0000},
+        },
+    },
+    {
+        "xdtn0g01", // missing IDAT chunk
+        {
+            {Default, OK, {}, 0x_0000_0000},
+        },
+    },
+    {
+        "xcsn0g01", // incorrect IDAT checksum
+        {
+            {Default, OK, {}, 0x_0000_0000},
+        },
+    },
+
+};
+
+
+
 Text_Title      :: "PngSuite";
 Text_Software   :: "Created on a NeXTstation color using \"pnmtopng\".";
 Text_Descrption :: "A compilation of a set of images created to test the\nvarious color-types of the PNG format. Included are\nblack&white, color, paletted, with alpha channel, with\ntransparency formats. All bit-depths allowed according\nto the spec are present.";
@@ -1298,7 +1397,7 @@ Expected_Text := map[string]map[string]png.Text {
             text = "करने के लिए PNG प्रारूप के विभिन्न रंग प्रकार परीक्षण बनाया छवियों का एक सेट का एक संकलन. शामिल काले और सफेद, रंग, पैलेटेड हैं, अल्फा चैनल के साथ पारदर्शिता स्वरूपों के साथ. सभी बिट गहराई कल्पना के अनुसार की अनुमति दी मौजूद हैं.",
         },
     },
-    // // .iTXt - international UTF-8, japanese
+    // .iTXt - international UTF-8, japanese
     "ctjn0g04" = map[string]png.Text {
         "Title"       = png.Text{
             keyword_localized = "タイトル",
@@ -1322,7 +1421,7 @@ Expected_Text := map[string]map[string]png.Text {
 png_test :: proc(t: ^testing.T) {
 
     total_tests    := 0;
-    total_expected := 217;
+    total_expected := 231;
 
     PNG_Suites := [][]PNG_Test{
         Basic_PNG_Tests,
@@ -1335,6 +1434,7 @@ png_test :: proc(t: ^testing.T) {
         PNG_ZLIB_Levels_Tests,
         PNG_sPAL_Tests,
         PNG_Ancillary_Tests,
+        Corrupt_PNG_Tests,
     };
 
     for suite in PNG_Suites {
@@ -1358,19 +1458,25 @@ run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
 
         count := 0;
         for test in file.tests {
-            count    += 1;
-            subtotal += 1;
+            count        += 1;
+            subtotal     += 1;
+            passed       := false;
+             /* Corrupt file tests start with an 'x' */
+            corrupt_test := file.file[0] == 'x';
 
             img, err := png.load(test_file, test.options);
 
             error  := fmt.tprintf("%v failed with %v.", file.file, err);
-            passed := is_kind(err, OK);
+            if corrupt_test {
+                passed = !is_kind(err, OK);
+            } else {
+                passed = is_kind(err, OK);
+            }
             failed_to_load := !passed;
 
             expect(t, passed, error);
 
-
-            if passed {
+            if passed && !corrupt_test {
                 // No point in running the other tests if it didn't load.
                 pixels := bytes.buffer_to_bytes(&img.pixels);
 
@@ -1770,7 +1876,7 @@ write_image_as_ppm :: proc(filename: string, image: ^image.Image) -> (success: b
                         bg = f64(v);
                     }
                     a  := f64(u16(p16[1])) / 65535.0;
-                    l  := (a * r) + (1 - a) * bg;
+                    l  := (a * r) + (1 / a) * bg;
 
                     o16[0] = u16(l);
                     o16[1] = u16(l);
@@ -1808,9 +1914,9 @@ write_image_as_ppm :: proc(filename: string, image: ^image.Image) -> (success: b
                     b     := f32(p16[2]);
                     a     := f32(p16[3]) / 65535.0;
 
-                    lr  := (a * r) + (1 - a) * f32(bg[0]);
-                    lg  := (a * g) + (1 - a) * f32(bg[1]);
-                    lb  := (a * b) + (1 - a) * f32(bg[2]);
+                    lr  := (a * r) + (1 / a) * f32(bg[0]);
+                    lg  := (a * g) + (1 / a) * f32(bg[1]);
+                    lb  := (a * b) + (1 / a) * f32(bg[2]);
 
                     o16[0] = u16be(lr);
                     o16[1] = u16be(lg);
@@ -1834,9 +1940,9 @@ write_image_as_ppm :: proc(filename: string, image: ^image.Image) -> (success: b
                     b := f32(pix[i+2]);
                     a := f32(pix[i+3]) / 255.0;
 
-                    lr := u8(f32(r) * a + (1 - a) * f32(bgcol[0]));
-                    lg := u8(f32(g) * a + (1 - a) * f32(bgcol[1]));
-                    lb := u8(f32(b) * a + (1 - a) * f32(bgcol[2]));
+                    lr := u8(f32(r) * a + (1 / a) * f32(bgcol[0]));
+                    lg := u8(f32(g) * a + (1 / a) * f32(bgcol[1]));
+                    lb := u8(f32(b) * a + (1 / a) * f32(bgcol[2]));
                     op.buf[o  ] = lr;
                     op.buf[o+1] = lg;
                     op.buf[o+2] = lb;
