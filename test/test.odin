@@ -1108,17 +1108,68 @@ PNG_Ancillary_Tests   := []PNG_Test{
             {Return_Metadata, OK, {32, 32, 3,  8}, 0x_c6bd_1a35},
         },
     },
+    {
+        "cs3n2c16", // color, 13 significant bits
+        {
+            {Return_Metadata, OK, {32, 32, 3, 16}, 0x_7919_bec4},
+        },
+    },
+    {
+        "cs3n3p08", // paletted, 3 significant bits
+        {
+            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_c472_63e3},
+        },
+    },
+    {
+        "cs5n2c08", // color, 5 significant bits
+        {
+            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_1b16_d169},
+        },
+    },
+    {
+        "cs5n3p08", // paletted, 5 significant bits
+        {
+            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_1b16_d169},
+        },
+    },
+    {
+        "cs8n2c08", // color, 8 significant bits (reference)
+        {
+            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_7306_351c},
+        },
+    },
+    {
+        "cs8n3p08", // paletted, 8 significant bits (reference)
+        {
+            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_7306_351c},
+        },
+    },
+    {
+        "ct0n0g04", // no textual data
+        {
+            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_c6bd_1a35},
+        },
+    },
+    {
+        "ct1n0g04", // with textual data
+        {
+            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_c6bd_1a35},
+        },
+    },
+    {
+        "ctzn0g04", // with compressed textual data
+        {
+            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_c6bd_1a35},
+        },
+    },
+    {
+        "cten0g04", // international UTF-8, english
+        {
+            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_908f_d2b2},
+        },
+    },
 
-// "cs3n2c16", // color, 13 significant bits
-// "cs3n3p08", // paletted, 3 significant bits
-// "cs5n2c08", // color, 5 significant bits
-// "cs5n3p08", // paletted, 5 significant bits
-// "cs8n2c08", // color, 8 significant bits (reference)
-// "cs8n3p08", // paletted, 8 significant bits (reference)
-// "ct0n0g04", // no textual data
-// "ct1n0g04", // with textual data
-// "ctzn0g04", // with compressed textual data
-// "cten0g04", // international UTF-8, english
+
 // "ctfn0g04", // international UTF-8, finnish
 // "ctgn0g04", // international UTF-8, greek
 // "cthn0g04", // international UTF-8, hindi
@@ -1126,12 +1177,69 @@ PNG_Ancillary_Tests   := []PNG_Test{
 // "exif2c08", // chunk with jpeg exif data
 };
 
+Text_Title    :: "PngSuite";
+Text_Software :: "Created on a NeXTstation color using \"pnmtopng\".";
+Text_Text     :: "A compilation of a set of images created to test the\nvarious color-types of the PNG format. Included are\nblack&white, color, paletted, with alpha channel, with\ntransparency formats. All bit-depths allowed according\nto the spec are present.";
+
+Expected_Text := map[string]map[string]png.Text {
+    // .tEXt
+    "ct1n0g04" = map[string]png.Text {
+        "Title"       = png.Text{
+            keyword_localized="",
+            language="",
+            text=Text_Title,
+        },
+        "Software"    = png.Text{
+            keyword_localized="",
+            language="",
+            text=Text_Software,
+        },
+        "Description" = png.Text{
+            keyword_localized="",
+            language="",
+            text=Text_Text,
+        },
+    },
+    // .zTXt
+    "ctzn0g04" = map[string]png.Text {
+        "Title"       = png.Text{
+            keyword_localized="",
+            language="",
+            text=Text_Title,
+        },
+        "Software"    = png.Text{
+            keyword_localized="",
+            language="",
+            text=Text_Software,
+        },
+        "Description" = png.Text{
+            keyword_localized="",
+            language="",
+            text=Text_Text,
+        },
+    },
+    // .iTXt - international UTF-8, english
+    "cten0g04" = map[string]png.Text {
+        "Title"       = png.Text{
+            keyword_localized="Title",
+            language="en",
+        },
+        "Software"    = png.Text{
+            keyword_localized="Software",
+            language="en",
+        },
+        "Description" = png.Text{
+            keyword_localized="Description",
+            language="en",
+        },
+    },
+};
 
 @test
 png_test :: proc(t: ^testing.T) {
 
     total_tests    := 0;
-    total_expected := 202;
+    total_expected := 212;
 
     PNG_Suites := [][]PNG_Test{
         Basic_PNG_Tests,
@@ -1312,10 +1420,11 @@ run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
                                 }
                             case .tIME:
                                 png_time := png.time(c);
-                                core_time, core_time_ok := png.core_time(c);
                                 time_err := "%v test %v tIME was %v, expected %v.";
-                                time_core_err := "%v test %v tIME->core:time is %v, expected %v.";
                                 expected_time: png.tIME;
+
+                                core_time, core_time_ok := png.core_time(c);
+                                time_core_err := "%v test %v tIME->core:time is %v, expected %v.";
                                 expected_core: time.Time;
 
                                 switch(file.file) {
@@ -1335,6 +1444,70 @@ run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
 
                                 error  = fmt.tprintf(time_core_err, file.file, count, core_time, expected_core);
                                 expect(t, core_time == expected_core && core_time_ok, error);
+                            case .sBIT:
+                                sbit, sbit_ok  := png.sbit(c);
+                                sbit_err       := "%v test %v sBIT was %v, expected %v.";
+                                expected_sbit: [4]u8;
+
+                                switch (file.file) {
+                                case "cs3n2c16": // color, 13 significant bits
+                                    expected_sbit = [4]u8{13, 13, 13,  0};
+                                case "cs3n3p08": // paletted, 3 significant bits
+                                    expected_sbit = [4]u8{ 3,  3,  3,  0};
+                                case "cs5n2c08": // color, 5 significant bits
+                                    expected_sbit = [4]u8{ 5,  5,  5,  0};
+                                case "cs5n3p08": // paletted, 5 significant bits
+                                    expected_sbit = [4]u8{ 5,  5,  5,  0};
+                                case "cs8n2c08": // color, 8 significant bits (reference)
+                                    expected_sbit = [4]u8{ 8,  8,  8,  0};
+                                case "cs8n3p08": // paletted, 8 significant bits (reference)
+                                    expected_sbit = [4]u8{ 8,  8,  8,  0};
+                                case "cdfn2c08", "cdhn2c08", "cdsn2c08", "cdun2c08", "ch1n3p04":
+                                    expected_sbit = [4]u8{ 4,  4,  4,  0};
+                                }
+                                error  = fmt.tprintf(sbit_err, file.file, count, sbit, expected_sbit);
+                                expect(t, sbit == expected_sbit && sbit_ok, error);
+                            case .tEXt, .zTXt:
+                                text, text_ok := png.text(c);
+                                defer png.text_destroy(text);
+
+                                switch(file.file) {
+                                case "ct1n0g04": // with textual data
+                                    fallthrough;
+                                case "ctzn0g04": // with compressed textual data
+                                    if file.file in Expected_Text {
+                                        if text.keyword in Expected_Text[file.file] {
+                                            test_text := Expected_Text[file.file][text.keyword].text;
+                                            error  = fmt.tprintf("%v test %v text keyword {{%v}}:'%v', expected '%v'.", file.file, count, text.keyword, text.text, test_text);
+                                            expect(t, text.text == test_text && text_ok, error);
+                                        }
+                                    }
+
+                                case "doozo": // with compressed textual data
+                                    if file.file in Expected_Text {
+                                        if text.keyword in Expected_Text[file.file] {
+                                            test := Expected_Text[file.file][text.keyword];
+                                            error  = fmt.tprintf("%v test %v text keyword {{%v}}:'%v', expected '%v'.", file.file, count, text.keyword, text.text, test.text);
+                                            expect(t, text.text == test.text && text_ok, error);
+                                        }
+                                    }
+                                }
+                            case .iTXt:
+                                text, text_ok := png.text(c);
+                                defer png.text_destroy(text);
+
+                                switch(file.file) {
+                                case "cten0g04": // international UTF-8, english
+                                    if file.file in Expected_Text {
+                                        if text.keyword in Expected_Text[file.file] {
+                                            test := Expected_Text[file.file][text.keyword];
+                                            error  = fmt.tprintf("%v test %v text keyword {{%v}}:'%v', expected '%v'.", file.file, count, text.keyword, text, test);
+                                            expect(t, text.language == test.language && text_ok, error);
+                                            expect(t, text.keyword_localized == test.keyword_localized && text_ok, error);
+                                        }
+                                    }
+                                }
+
                             }
                         }
                     }
