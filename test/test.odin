@@ -91,14 +91,14 @@ PNG_Test :: struct {
     },
 }
 
-Default         :: image.Options{};
-Alpha_Add       :: image.Options{.alpha_add_if_missing};
-Premul_Drop     :: image.Options{.alpha_premultiply, .alpha_drop_if_present};
-Just_Drop       :: image.Options{.alpha_drop_if_present};
-Blend_BG        :: image.Options{.blend_background};
-Blend_BG_Keep   :: image.Options{.blend_background, .alpha_add_if_missing};
-Return_Metadata :: image.Options{.return_metadata};
-
+Default              :: image.Options{};
+Alpha_Add            :: image.Options{.alpha_add_if_missing};
+Premul_Drop          :: image.Options{.alpha_premultiply, .alpha_drop_if_present};
+Just_Drop            :: image.Options{.alpha_drop_if_present};
+Blend_BG             :: image.Options{.blend_background};
+Blend_BG_Keep        :: image.Options{.blend_background, .alpha_add_if_missing};
+Return_Metadata      :: image.Options{.return_metadata};
+No_Channel_Expansion :: image.Options{.do_not_expand_channels, .return_metadata};
 
 PNG_Dims    :: struct #packed {
     width:     int,
@@ -1297,6 +1297,30 @@ Corrupt_PNG_Tests   := []PNG_Test{
 
 };
 
+No_Postprocesing_Tests := []PNG_Test{
+    /*
+        These are some custom tests where we skip expanding to RGB(A).
+    */
+    {
+        "ps1n0g08", // six-cube suggested palette (1 byte) in grayscale image
+        {
+            {No_Channel_Expansion, OK, {32, 32, 1,  8}, 0x784b_4a4e},
+        },
+    },
+    {
+        "basn0g16", // 16 bit (64k level) grayscale
+        {
+            {No_Channel_Expansion, OK, {32, 32, 1, 16}, 0x_2ab1_5133},
+        },
+    },
+    {
+        "basn3p04", // 4 bit (16 color) paletted
+        {
+            {No_Channel_Expansion, OK, {32, 32, 1,  8}, 0x_280e_99f1},
+        },
+    },
+};
+
 
 
 Text_Title      :: "PngSuite";
@@ -1421,7 +1445,7 @@ Expected_Text := map[string]map[string]png.Text {
 png_test :: proc(t: ^testing.T) {
 
     total_tests    := 0;
-    total_expected := 231;
+    total_expected := 234;
 
     PNG_Suites := [][]PNG_Test{
         Basic_PNG_Tests,
@@ -1435,6 +1459,9 @@ png_test :: proc(t: ^testing.T) {
         PNG_sPAL_Tests,
         PNG_Ancillary_Tests,
         Corrupt_PNG_Tests,
+
+        No_Postprocesing_Tests,
+
     };
 
     for suite in PNG_Suites {
@@ -1651,7 +1678,7 @@ run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
                                     expected_sbit = [4]u8{ 8,  8,  8,  0};
                                 case "cs8n3p08": // paletted, 8 significant bits (reference)
                                     expected_sbit = [4]u8{ 8,  8,  8,  0};
-                                case "cdfn2c08", "cdhn2c08", "cdsn2c08", "cdun2c08", "ch1n3p04":
+                                case "cdfn2c08", "cdhn2c08", "cdsn2c08", "cdun2c08", "ch1n3p04", "basn3p04":
                                     expected_sbit = [4]u8{ 4,  4,  4,  0};
                                 }
                                 error  = fmt.tprintf(sbit_err, file.file, count, sbit, expected_sbit);
