@@ -1056,21 +1056,21 @@ PNG_Ancillary_Tests   := []PNG_Test{
     {
         "cdfn2c08", // physical pixel dimensions, 8x32 flat pixels
         {
-            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_99af_40a3},
+            {Return_Metadata, OK, { 8, 32, 3,  8}, 0x_99af_40a3},
         },
     },
-    // {
-    //     "cdhn2c08", // physical pixel dimensions, 32x8 high pixels
-    //     {
-    //         {Return_Metadata, OK, {32, 32, 3,  8}, 0x_2e1d_8ef1},
-    //     },
-    // },
-    // {
-    //     "cdsn2c08", // physical pixel dimensions, 8x8 square pixels
-    //     {
-    //         {Return_Metadata, OK, {32, 32, 3,  8}, 0x_2e1d_8ef1},
-    //     },
-    // },
+    {
+        "cdhn2c08", // physical pixel dimensions, 32x8 high pixels
+        {
+            {Return_Metadata, OK, {32,  8, 3,  8}, 0x_84a4_ef40},
+        },
+    },
+    {
+        "cdsn2c08", // physical pixel dimensions, 8x8 square pixels
+        {
+            {Return_Metadata, OK, { 8,  8, 3,  8}, 0x_82b2_6daf},
+        },
+    },
     // {
     //     "cdun2c08", // physical pixel dimensions, 1000 pixels per 1 meter
     //     {
@@ -1106,7 +1106,7 @@ PNG_Ancillary_Tests   := []PNG_Test{
 png_test :: proc(t: ^testing.T) {
 
     total_tests    := 0;
-    total_expected := 193;
+    total_expected := 196;
 
     PNG_Suites := [][]PNG_Test{
         Basic_PNG_Tests,
@@ -1158,11 +1158,33 @@ run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
                 // No point in running the other tests if it didn't load.
                 pixels := bytes.buffer_to_bytes(&img.pixels);
 
-                dims   := PNG_Dims{img.width, img.height, img.channels, img.depth};
-                error  = fmt.tprintf("%v has %v, expected: %v.", file.file, dims, test.dims);
-                expect(t, test.dims == dims, error);
+                when false {
+                    // This struct compare fails at -opt:2
 
-                passed &= test.dims == dims;
+                    dims   := PNG_Dims{img.width, img.height, img.channels, img.depth};
+                    error  = fmt.tprintf("%v has %v, expected: %v.", file.file, dims, test.dims);
+                    expect(t, test.dims == dims, error);
+
+                    passed &= test.dims == dims;
+                } else {
+                    // This works even at -opt:2
+
+                    error  = fmt.tprintf("%v width is %v, expected %v",    file.file, test.dims.width,    img.width);
+                    expect(t, test.dims.width    == img.width,    error);
+                    passed &= test.dims.width    == img.width;
+
+                    error  = fmt.tprintf("%v height is %v, expected %v",   file.file, test.dims.height,   img.height);
+                    expect(t, test.dims.height   == img.height,   error);
+                    passed &= test.dims.height   == img.height;
+
+                    error  = fmt.tprintf("%v channels is %v, expected %v", file.file, test.dims.channels, img.channels);
+                    expect(t, test.dims.channels == img.channels, error);
+                    passed &= test.dims.channels == img.channels;
+
+                    error  = fmt.tprintf("%v depth is %v, expected %v",    file.file, test.dims.depth,    img.depth);
+                    expect(t, test.dims.depth    == img.depth,    error);
+                    passed &= test.dims.depth    == img.depth;
+                }
 
                 hash   := hash.crc32(pixels);
                 error  = fmt.tprintf("%v test %v hash is %08x, expected %08x.", file.file, count, hash, test.hash);
@@ -1220,11 +1242,26 @@ run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
                                     error  = fmt.tprintf("%v test %v cHRM is %v, expected %v.", file.file, count, chrm, expected_chrm);
                                     expect(t, expected_chrm == chrm && chrm_ok, error);
                                 }
+                            case .pHYs:
+                                phys := png.phys(c);
+                                switch (file.file) {
+                                case "cdfn2c08":
+                                    expected_phys := png.pHYs{ppu_x = 1, ppu_y = 4, unit = .Unknown};
+                                    error  = fmt.tprintf("%v test %v cHRM is %v, expected %v.", file.file, count, phys, expected_phys);
+                                    expect(t, expected_phys == phys, error);
+                                case "cdhn2c08":
+                                    expected_phys := png.pHYs{ppu_x = 4, ppu_y = 1, unit = .Unknown};
+                                    error  = fmt.tprintf("%v test %v cHRM is %v, expected %v.", file.file, count, phys, expected_phys);
+                                    expect(t, expected_phys == phys, error);
+                                case "cdsn2c08":
+                                    expected_phys := png.pHYs{ppu_x = 1, ppu_y = 1, unit = .Unknown};
+                                    error  = fmt.tprintf("%v test %v cHRM is %v, expected %v.", file.file, count, phys, expected_phys);
+                                    expect(t, expected_phys == phys, error);
+                                }
                             }
                         }
                     }
                 }
-
             }
 
             if WRITE_PPM_ON_FAIL && !passed && !failed_to_load {
