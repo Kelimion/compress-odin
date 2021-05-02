@@ -1258,6 +1258,24 @@ Expected_Text := map[string]map[string]png.Text {
             text = "kokoelma joukon kuvia luotu testata eri väri-tyyppisiä PNG-muodossa. Mukana on mustavalkoinen, väri, paletted, alpha-kanava, avoimuuden muodossa. Kaikki bit-syvyydessä mukaan sallittua spec on ​​läsnä.",
         },
     },
+    // .iTXt - international UTF-8, greek
+    "ctgn0g04" = map[string]png.Text {
+        "Title"       = png.Text{
+            keyword_localized = "Τίτλος",
+            language = "el",
+            text ="PngSuite",
+        },
+        "Software"    = png.Text{
+            keyword_localized = "Λογισμικό",
+            language = "el",
+            text = "Δημιουργήθηκε σε ένα χρώμα NeXTstation χρησιμοποιώντας \"pnmtopng\".",
+        },
+        "Description" = png.Text{
+            keyword_localized = "Περιγραφή",
+            language = "el",
+            text = "Μια συλλογή από ένα σύνολο εικόνων που δημιουργήθηκαν για τη δοκιμή των διαφόρων χρωμάτων-τύπων του μορφή PNG. Περιλαμβάνονται οι ασπρόμαυρες, χρώμα, paletted, με άλφα κανάλι, με μορφές της διαφάνειας. Όλοι λίγο-βάθη επιτρέπεται σύμφωνα με το spec είναι παρόντες.",
+        },
+    },
     // .iTXt - international UTF-8, hindi
     "cthn0g04" = map[string]png.Text {
         "Title"       = png.Text{
@@ -1276,7 +1294,7 @@ Expected_Text := map[string]map[string]png.Text {
             text = "करने के लिए PNG प्रारूप के विभिन्न रंग प्रकार परीक्षण बनाया छवियों का एक सेट का एक संकलन. शामिल काले और सफेद, रंग, पैलेटेड हैं, अल्फा चैनल के साथ पारदर्शिता स्वरूपों के साथ. सभी बिट गहराई कल्पना के अनुसार की अनुमति दी मौजूद हैं.",
         },
     },
-    // // .iTXt - international UTF-8, hindi
+    // // .iTXt - international UTF-8, japanese
     "ctjn0g04" = map[string]png.Text {
         "Title"       = png.Text{
             keyword_localized = "タイトル",
