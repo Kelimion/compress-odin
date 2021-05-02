@@ -14,6 +14,7 @@ import "core:fmt"
 
 import "core:mem"
 import "core:os"
+import "core:time"
 
 WRITE_PPM_ON_FAIL :: #config(WRITE_PPM_ON_FAIL, false);
 
@@ -1077,13 +1078,37 @@ PNG_Ancillary_Tests   := []PNG_Test{
             {Return_Metadata, OK, {32, 32, 3,  8}, 0x_ee50_e3ca},
         },
     },
+    {
+        "ch1n3p04", // histogram 15 colors
+        {
+            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_3a9e_038e},
+        },
+    },
+    {
+        "ch2n3p08", // histogram 256 colors
+        {
+            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_ff6e_2940},
+        },
+    },
+    {
+        "cm0n0g04", // modification time, 01-jan-2000 12:34:56
+        {
+            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_c6bd_1a35},
+        },
+    },
+    {
+        "cm7n0g04", // modification time, 01-jan-1970 00:00:00
+        {
+            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_c6bd_1a35},
+        },
+    },
+    {
+        "cm9n0g04", // modification time, 31-dec-1999 23:59:59
+        {
+            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_c6bd_1a35},
+        },
+    },
 
-
-// "ch1n3p04", // histogram 15 colors
-// "ch2n3p08", // histogram 256 colors
-// "cm0n0g04", // modification time, 01-jan-2000 12:34:56
-// "cm7n0g04", // modification time, 01-jan-1970 00:00:00
-// "cm9n0g04", // modification time, 31-dec-1999 23:59:59
 // "cs3n2c16", // color, 13 significant bits
 // "cs3n3p08", // paletted, 3 significant bits
 // "cs5n2c08", // color, 5 significant bits
@@ -1106,7 +1131,7 @@ PNG_Ancillary_Tests   := []PNG_Test{
 png_test :: proc(t: ^testing.T) {
 
     total_tests    := 0;
-    total_expected := 197;
+    total_expected := 202;
 
     PNG_Suites := [][]PNG_Test{
         Basic_PNG_Tests,
@@ -1254,25 +1279,62 @@ run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
                                     expect(t, expected_chrm == chrm && chrm_ok, error);
                                 }
                             case .pHYs:
-                                phys := png.phys(c);
+                                phys     := png.phys(c);
+                                phys_err := "%v test %v cHRM is %v, expected %v.";
                                 switch (file.file) {
                                 case "cdfn2c08":
-                                    expected_phys := png.pHYs{ppu_x = 1, ppu_y = 4, unit = .Unknown};
-                                    error  = fmt.tprintf("%v test %v cHRM is %v, expected %v.", file.file, count, phys, expected_phys);
+                                    expected_phys := png.pHYs{ppu_x =    1, ppu_y =    4, unit = .Unknown};
+                                    error  = fmt.tprintf(phys_err, file.file, count, phys, expected_phys);
                                     expect(t, expected_phys == phys, error);
                                 case "cdhn2c08":
-                                    expected_phys := png.pHYs{ppu_x = 4, ppu_y = 1, unit = .Unknown};
-                                    error  = fmt.tprintf("%v test %v cHRM is %v, expected %v.", file.file, count, phys, expected_phys);
+                                    expected_phys := png.pHYs{ppu_x =    4, ppu_y =    1, unit = .Unknown};
+                                    error  = fmt.tprintf(phys_err, file.file, count, phys, expected_phys);
                                     expect(t, expected_phys == phys, error);
                                 case "cdsn2c08":
-                                    expected_phys := png.pHYs{ppu_x = 1, ppu_y = 1, unit = .Unknown};
-                                    error  = fmt.tprintf("%v test %v cHRM is %v, expected %v.", file.file, count, phys, expected_phys);
+                                    expected_phys := png.pHYs{ppu_x =    1, ppu_y =    1, unit = .Unknown};
+                                    error  = fmt.tprintf(phys_err, file.file, count, phys, expected_phys);
                                     expect(t, expected_phys == phys, error);
                                 case "cdun2c08":
                                     expected_phys := png.pHYs{ppu_x = 1000, ppu_y = 1000, unit = .Meter};
-                                    error  = fmt.tprintf("%v test %v cHRM is %v, expected %v.", file.file, count, phys, expected_phys);
+                                    error  = fmt.tprintf(phys_err, file.file, count, phys, expected_phys);
                                     expect(t, expected_phys == phys, error);
                                 }
+                            case .hIST:
+                                hist, hist_ok := png.hist(c);
+                                hist_err := "%v test %v hIST has %v entries, expected %v.";
+                                switch (file.file) {
+                                case "ch1n3p04":
+                                    error  = fmt.tprintf(hist_err, file.file, count, hist.used, 15);
+                                    expect(t, hist.used == 15 && hist_ok, error);
+                                case "ch2n3p08":
+                                    error  = fmt.tprintf(hist_err, file.file, count, hist.used, 256);
+                                    expect(t, hist.used == 256 && hist_ok, error);
+                                }
+                            case .tIME:
+                                png_time := png.time(c);
+                                core_time, core_time_ok := png.core_time(c);
+                                time_err := "%v test %v tIME was %v, expected %v.";
+                                time_core_err := "%v test %v tIME->core:time is %v, expected %v.";
+                                expected_time: png.tIME;
+                                expected_core: time.Time;
+
+                                switch(file.file) {
+                                case "cm0n0g04": // modification time, 01-jan-2000 12:34:56
+                                    expected_time = png.tIME{year = 2000, month =  1, day =  1, hour = 12, minute = 34, second = 56};
+                                    expected_core = time.Time{_nsec = 946730096000000000};
+                                case "cm7n0g04": // modification time, 01-jan-1970 00:00:00
+                                    expected_time = png.tIME{year = 1970, month =  1, day =  1, hour =  0, minute =  0, second =  0};
+                                    expected_core = time.Time{_nsec =                  0};
+                                case "cm9n0g04": // modification time, 31-dec-1999 23:59:59
+                                    expected_time = png.tIME{year = 1999, month = 12, day = 31, hour = 23, minute = 59, second = 59};
+                                    expected_core = time.Time{_nsec = 946684799000000000};
+
+                                }
+                                error  = fmt.tprintf(time_err, file.file, count, png_time, expected_time);
+                                expect(t, png_time == expected_time, error);
+
+                                error  = fmt.tprintf(time_core_err, file.file, count, core_time, expected_core);
+                                expect(t, core_time == expected_core && core_time_ok, error);
                             }
                         }
                     }
