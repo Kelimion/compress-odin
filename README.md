@@ -2,14 +2,27 @@
 
 Compress-Odin aims to implement several common compression algorithms and file formats using them in [Odin](https://github.com/odin-lang/Odin).
 
-## Immediate goals
-It aims to provide the following and more:
-- deflate (compress)
-- inflate (unpack)
-- gzip    (gzip stream handling)
-- zip     (zip archive handling)
-- png     (reading and writing png files)
-- zlib    (reading and writing zlib streams)
+## Roadmap
+Stage 1:
+- Deflate compressor
+- Tar / Tar.gz packer and unpacker
+- Quick optimization pass on stream handling and bit readers/writers
+- ZIP unpacker for ZIP 2.0, covering 99.99% of all ZIP files
+- ZLIB 'writer', PNG writer, ZIP writer
+- Proper optimization pass on stage 1
+
+Stage 2:
+- Jpeg loader
+- Jpeg writer
+- LZ4 packer and unpacker
+- BZIP2 / Tar.bz2 packer and unpacker
+- Deflate64 packer and unpacker / ZIP 2.5+ format support.
+- Optimization pass on stage 2
+
+Stage 3:
+- LWZ/GIF reader
+- APNG... maybe?
+- ZStd + Optimization pass
 
 ## Progress
 
