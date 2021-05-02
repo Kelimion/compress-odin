@@ -1168,54 +1168,61 @@ PNG_Ancillary_Tests   := []PNG_Test{
             {Return_Metadata, OK, {32, 32, 3,  8}, 0x_908f_d2b2},
         },
     },
+    {
+        "ctfn0g04", // international UTF-8, finnish
+        {
+            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_7f7a_43a7},
+        },
+    },
+    {
+        "ctgn0g04", // international UTF-8, greek
+        {
+            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_0ad1_d3d6},
+        },
+    },
+    {
+        "cthn0g04", // international UTF-8, hindi
+        {
+            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_c461_c896},
+        },
+    },
+    {
+        "ctjn0g04", // international UTF-8, japanese
+        {
+            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_5539_0861},
+        },
+    },
 
-
-// "ctfn0g04", // international UTF-8, finnish
-// "ctgn0g04", // international UTF-8, greek
-// "cthn0g04", // international UTF-8, hindi
-// "ctjn0g04", // international UTF-8, japanese
 // "exif2c08", // chunk with jpeg exif data
 };
 
-Text_Title    :: "PngSuite";
-Text_Software :: "Created on a NeXTstation color using \"pnmtopng\".";
-Text_Text     :: "A compilation of a set of images created to test the\nvarious color-types of the PNG format. Included are\nblack&white, color, paletted, with alpha channel, with\ntransparency formats. All bit-depths allowed according\nto the spec are present.";
+Text_Title      :: "PngSuite";
+Text_Software   :: "Created on a NeXTstation color using \"pnmtopng\".";
+Text_Descrption :: "A compilation of a set of images created to test the\nvarious color-types of the PNG format. Included are\nblack&white, color, paletted, with alpha channel, with\ntransparency formats. All bit-depths allowed according\nto the spec are present.";
 
 Expected_Text := map[string]map[string]png.Text {
     // .tEXt
     "ct1n0g04" = map[string]png.Text {
         "Title"       = png.Text{
-            keyword_localized="",
-            language="",
             text=Text_Title,
         },
         "Software"    = png.Text{
-            keyword_localized="",
-            language="",
             text=Text_Software,
         },
         "Description" = png.Text{
-            keyword_localized="",
-            language="",
-            text=Text_Text,
+            text=Text_Descrption,
         },
     },
     // .zTXt
     "ctzn0g04" = map[string]png.Text {
         "Title"       = png.Text{
-            keyword_localized="",
-            language="",
             text=Text_Title,
         },
         "Software"    = png.Text{
-            keyword_localized="",
-            language="",
             text=Text_Software,
         },
         "Description" = png.Text{
-            keyword_localized="",
-            language="",
-            text=Text_Text,
+            text=Text_Descrption,
         },
     },
     // .iTXt - international UTF-8, english
@@ -1233,13 +1240,67 @@ Expected_Text := map[string]map[string]png.Text {
             language="en",
         },
     },
+    // .iTXt - international UTF-8, finnish
+    "ctfn0g04" = map[string]png.Text {
+        "Title"       = png.Text{
+            keyword_localized = "Otsikko",
+            language = "fi",
+            text ="PngSuite",
+        },
+        "Software"    = png.Text{
+            keyword_localized = "Ohjelmistot",
+            language = "fi",
+            text = "Luotu NeXTstation väriä \"pnmtopng\".",
+        },
+        "Description" = png.Text{
+            keyword_localized = "Kuvaus",
+            language = "fi",
+            text = "kokoelma joukon kuvia luotu testata eri väri-tyyppisiä PNG-muodossa. Mukana on mustavalkoinen, väri, paletted, alpha-kanava, avoimuuden muodossa. Kaikki bit-syvyydessä mukaan sallittua spec on ​​läsnä.",
+        },
+    },
+    // .iTXt - international UTF-8, hindi
+    "cthn0g04" = map[string]png.Text {
+        "Title"       = png.Text{
+            keyword_localized = "शीर्षक",
+            language = "hi",
+            text ="PngSuite",
+        },
+        "Software"    = png.Text{
+            keyword_localized = "सॉफ्टवेयर",
+            language = "hi",
+            text = "एक NeXTstation \"pnmtopng \'का उपयोग कर रंग पर बनाया गया.",
+        },
+        "Description" = png.Text{
+            keyword_localized = "विवरण",
+            language = "hi",
+            text = "करने के लिए PNG प्रारूप के विभिन्न रंग प्रकार परीक्षण बनाया छवियों का एक सेट का एक संकलन. शामिल काले और सफेद, रंग, पैलेटेड हैं, अल्फा चैनल के साथ पारदर्शिता स्वरूपों के साथ. सभी बिट गहराई कल्पना के अनुसार की अनुमति दी मौजूद हैं.",
+        },
+    },
+    // // .iTXt - international UTF-8, hindi
+    "ctjn0g04" = map[string]png.Text {
+        "Title"       = png.Text{
+            keyword_localized = "タイトル",
+            language = "ja",
+            text ="PngSuite",
+        },
+        "Software"    = png.Text{
+            keyword_localized = "ソフトウェア",
+            language = "ja",
+            text = "\"pnmtopng\"を使用してNeXTstation色上に作成されます。",
+        },
+        "Description" = png.Text{
+            keyword_localized = "概要",
+            language = "ja",
+            text = "PNG形式の様々な色の種類をテストするために作成されたイメージのセットのコンパイル。含まれているのは透明度のフォーマットで、アルファチャネルを持つ、白黒、カラー、パレットです。すべてのビット深度が存在している仕様に従ったことができました。",
+        },
+    },
 };
 
 @test
 png_test :: proc(t: ^testing.T) {
 
     total_tests    := 0;
-    total_expected := 212;
+    total_expected := 216;
 
     PNG_Suites := [][]PNG_Test{
         Basic_PNG_Tests,
@@ -1506,8 +1567,47 @@ run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
                                             expect(t, text.keyword_localized == test.keyword_localized && text_ok, error);
                                         }
                                     }
+                                case "ctfn0g04": // international UTF-8, finnish
+                                    if file.file in Expected_Text {
+                                        if text.keyword in Expected_Text[file.file] {
+                                            test := Expected_Text[file.file][text.keyword];
+                                            error  = fmt.tprintf("%v test %v text keyword {{%v}}:'%v', expected '%v'.", file.file, count, text.keyword, text, test);
+                                            expect(t, text.text == test.text && text_ok, error);
+                                            expect(t, text.language == test.language && text_ok, error);
+                                            expect(t, text.keyword_localized == test.keyword_localized && text_ok, error);
+                                        }
+                                    }
+                                case "ctgn0g04": // international UTF-8, greek
+                                    if file.file in Expected_Text {
+                                        if text.keyword in Expected_Text[file.file] {
+                                            test := Expected_Text[file.file][text.keyword];
+                                            error  = fmt.tprintf("%v test %v text keyword {{%v}}:'%v', expected '%v'.", file.file, count, text.keyword, text, test);
+                                            expect(t, text.text == test.text && text_ok, error);
+                                            expect(t, text.language == test.language && text_ok, error);
+                                            expect(t, text.keyword_localized == test.keyword_localized && text_ok, error);
+                                        }
+                                    }
+                                case "cthn0g04": // international UTF-8, hindi
+                                    if file.file in Expected_Text {
+                                        if text.keyword in Expected_Text[file.file] {
+                                            test := Expected_Text[file.file][text.keyword];
+                                            error  = fmt.tprintf("%v test %v text keyword {{%v}}:'%v', expected '%v'.", file.file, count, text.keyword, text, test);
+                                            expect(t, text.text == test.text && text_ok, error);
+                                            expect(t, text.language == test.language && text_ok, error);
+                                            expect(t, text.keyword_localized == test.keyword_localized && text_ok, error);
+                                        }
+                                    }
+                                case "ctjn0g04": // international UTF-8, japanese
+                                    if file.file in Expected_Text {
+                                        if text.keyword in Expected_Text[file.file] {
+                                            test := Expected_Text[file.file][text.keyword];
+                                            error  = fmt.tprintf("%v test %v text keyword {{%v}}:'%v', expected '%v'.", file.file, count, text.keyword, text, test);
+                                            expect(t, text.text == test.text && text_ok, error);
+                                            expect(t, text.language == test.language && text_ok, error);
+                                            expect(t, text.keyword_localized == test.keyword_localized && text_ok, error);
+                                        }
+                                    }
                                 }
-
                             }
                         }
                     }
