@@ -15,7 +15,7 @@ It aims to provide the following and more:
 
 ZLIB, DEFLATE and GZIP decompression are implemented and became Odin's `core:compress` standard packages.
 
-PNG 1.2 support has been implemented and was became Odin's `core:image/png` standard package.
+PNG 1.2 support has been implemented and has become Odin's `core:image/png` standard package.
 
 ZIP:
 - [x] Structures for ZIP 6.3.9 are defined and a basic file parser has been started.
