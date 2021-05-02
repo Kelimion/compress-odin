@@ -38,20 +38,6 @@ ZIP:
 Patented features added in v6.2 of the spec will not be implemented beyond defining their enums and structs,
 so their use may be appropriately signalled to the end user, even if using their payloads remains outside the scope of this implementation.
 
-## Near future goals
-- Profiling and optimization of the current code, starting with ZLIB.
-
-- TAR/TAR.gz unpacker
-- ZIP unpacker
-   - Allow `inflate` to be read from as a stream so compressed data need not be present in memory all at once.
-- DEFLATE compression
-- PNG, GZIP and ZIP writers using the above
-- JPEG loading and saving
-- LZ4 (de)compression
-- ZStd (de)compression
-- LZW decompression and GIF loading
-
-
 ## Specifications:
 ZLIB is defined in [RFC 1950](https://tools.ietf.org/html/rfc1950).
 
