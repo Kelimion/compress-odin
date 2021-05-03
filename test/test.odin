@@ -46,9 +46,9 @@ zlib_test :: proc(t: ^testing.T) {
     buf: bytes.Buffer;
     defer bytes.buffer_destroy(&buf);
 
-    err := zlib.inflate(ODIN_DEMO, &buf);
+    err  := zlib.inflate(ODIN_DEMO, &buf);
 
-    expect(t, is_kind(err, OK), "ZLIB failed to decompress ODIN_DEMO");
+    expect(t, err == compress.General_Error.OK, "ZLIB failed to decompress ODIN_DEMO");
     s := bytes.buffer_to_string(&buf);
 
     expect(t, s[68] == 240 && s[69] == 159 && s[70] == 152, "ZLIB result should've contained 😃 at position 68.");
@@ -75,7 +75,7 @@ gzip_test :: proc(t: ^testing.T) {
 
     err := gzip.load(TEST, &buf);
 
-    expect(t, is_kind(err, OK), "GZIP failed to decompress TEST");
+    expect(t, err == compress.General_Error.OK, "GZIP failed to decompress TEST");
     s := bytes.buffer_to_string(&buf);
 
     expect(t, s == "payload", "GZIP result wasn't 'payload'");
@@ -1472,11 +1472,6 @@ png_test :: proc(t: ^testing.T) {
     expect(t, total_tests == total_expected, error);
 }
 
-is_kind :: proc(u: $U, x: $V) -> bool where U == compress.Error {
-    v, ok := u.(V);
-    return ok && v == x;
-}
-
 run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
     for file in suite {
         test_suite_path := "PNG test suite";
@@ -1495,9 +1490,9 @@ run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
 
             error  := fmt.tprintf("%v failed with %v.", file.file, err);
             if corrupt_test {
-                passed = !is_kind(err, OK);
+                passed = err != compress.General_Error.OK;
             } else {
-                passed = is_kind(err, OK);
+                passed = err == test.expected_error;
             }
             failed_to_load := !passed;
 

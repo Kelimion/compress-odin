@@ -5,10 +5,11 @@ Compress-Odin aims to implement several common compression algorithms and file f
 ## Roadmap
 Stage 1:
 - Deflate compressor
+- ZLIB 'writer', PNG writer
 - Tar / Tar.gz packer and unpacker
 - Quick optimization pass on stream handling and bit readers/writers
 - ZIP unpacker for ZIP 2.0, covering 99.99% of all ZIP files
-- ZLIB 'writer', PNG writer, ZIP writer
+- ZIP writer
 - Proper optimization pass on stage 1
 
 Stage 2:
