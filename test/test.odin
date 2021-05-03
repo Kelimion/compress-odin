@@ -19,7 +19,6 @@ import "core:time"
 WRITE_PPM_ON_FAIL :: #config(WRITE_PPM_ON_FAIL, false);
 
 expect  :: testing.expect;
-OK      :: compress.General_Error.OK;
 
 @test
 zlib_test :: proc(t: ^testing.T) {
@@ -48,7 +47,7 @@ zlib_test :: proc(t: ^testing.T) {
 
     err  := zlib.inflate(ODIN_DEMO, &buf);
 
-    expect(t, err == compress.General_Error.OK, "ZLIB failed to decompress ODIN_DEMO");
+    expect(t, err == nil, "ZLIB failed to decompress ODIN_DEMO");
     s := bytes.buffer_to_string(&buf);
 
     expect(t, s[68] == 240 && s[69] == 159 && s[70] == 152, "ZLIB result should've contained 😃 at position 68.");
@@ -75,7 +74,7 @@ gzip_test :: proc(t: ^testing.T) {
 
     err := gzip.load(TEST, &buf);
 
-    expect(t, err == compress.General_Error.OK, "GZIP failed to decompress TEST");
+    expect(t, err == nil, "GZIP failed to decompress TEST");
     s := bytes.buffer_to_string(&buf);
 
     expect(t, s == "payload", "GZIP result wasn't 'payload'");
@@ -116,106 +115,106 @@ Basic_PNG_Tests       := []PNG_Test{
     {
         "basn0g01", // Black and white.
         {
-            {Default,     OK, {32, 32, 3,  8}, 0x_1d8b_1934},
-            {Alpha_Add,   OK, {32, 32, 4,  8}, 0x_0da2_8714},
+            {Default,     nil, {32, 32, 3,  8}, 0x_1d8b_1934},
+            {Alpha_Add,   nil, {32, 32, 4,  8}, 0x_0da2_8714},
         },
     },
     {
         "basn0g02", // 2 bit (4 level) grayscale
         {
-            {Default,     OK, {32, 32, 3,  8}, 0x_cce2_e274},
-            {Alpha_Add,   OK, {32, 32, 4,  8}, 0x_2e3f_e285},
+            {Default,     nil, {32, 32, 3,  8}, 0x_cce2_e274},
+            {Alpha_Add,   nil, {32, 32, 4,  8}, 0x_2e3f_e285},
         },
     },
     {
         "basn0g04", // 4 bit (16 level) grayscale
         {
-            {Default,     OK, {32, 32, 3,  8}, 0x_e6ed_c27d},
-            {Alpha_Add,   OK, {32, 32, 4,  8}, 0x_8d0f_641b},
+            {Default,     nil, {32, 32, 3,  8}, 0x_e6ed_c27d},
+            {Alpha_Add,   nil, {32, 32, 4,  8}, 0x_8d0f_641b},
         },
     },
     {
         "basn0g08", // 8 bit (256 level) grayscale
         {
-            {Default,     OK, {32, 32, 3,  8}, 0x_7e0a_8ab4},
-            {Alpha_Add,   OK, {32, 32, 4,  8}, 0x_c395_683c},
+            {Default,     nil, {32, 32, 3,  8}, 0x_7e0a_8ab4},
+            {Alpha_Add,   nil, {32, 32, 4,  8}, 0x_c395_683c},
         },
     },
     {
         "basn0g16", // 16 bit (64k level) grayscale
         {
-            {Default,     OK, {32, 32, 3, 16}, 0x_d6ae_7df7},
-            {Alpha_Add,   OK, {32, 32, 4, 16}, 0x_a9da_b1bf},
+            {Default,     nil, {32, 32, 3, 16}, 0x_d6ae_7df7},
+            {Alpha_Add,   nil, {32, 32, 4, 16}, 0x_a9da_b1bf},
         },
     },
     {
         "basn2c08", // 3x8 bits rgb color
         {
-            {Default,     OK, {32, 32, 3,  8}, 0x_7855_b9bf},
-            {Alpha_Add,   OK, {32, 32, 4,  8}, 0x_2fb5_4036},
+            {Default,     nil, {32, 32, 3,  8}, 0x_7855_b9bf},
+            {Alpha_Add,   nil, {32, 32, 4,  8}, 0x_2fb5_4036},
         },
     },
     {
         "basn2c16", // 3x16 bits rgb color
         {
-            {Default,     OK, {32, 32, 3, 16}, 0x_8ec6_de79},
-            {Alpha_Add,   OK, {32, 32, 4, 16}, 0x_0a7e_bae6},
+            {Default,     nil, {32, 32, 3, 16}, 0x_8ec6_de79},
+            {Alpha_Add,   nil, {32, 32, 4, 16}, 0x_0a7e_bae6},
         },
     },
     {
         "basn3p01", // 1 bit (2 color) paletted
         {
-            {Default,     OK, {32, 32, 3,  8}, 0x_31ec_284b},
-            {Alpha_Add,   OK, {32, 32, 4,  8}, 0x_4d84_31a4},
+            {Default,     nil, {32, 32, 3,  8}, 0x_31ec_284b},
+            {Alpha_Add,   nil, {32, 32, 4,  8}, 0x_4d84_31a4},
         },
     },
     {
         "basn3p02", // 2 bit (4 color) paletted
         {
-            {Default,     OK, {32, 32, 3,  8}, 0x_279a_463a},
-            {Alpha_Add,   OK, {32, 32, 4,  8}, 0x_e4db_b6bc},
+            {Default,     nil, {32, 32, 3,  8}, 0x_279a_463a},
+            {Alpha_Add,   nil, {32, 32, 4,  8}, 0x_e4db_b6bc},
         },
     },
     {
         "basn3p04", // 4 bit (16 color) paletted
         {
-            {Default,     OK, {32, 32, 3,  8}, 0x_3a9e_038e},
-            {Alpha_Add,   OK, {32, 32, 4,  8}, 0x_671f_880f},
+            {Default,     nil, {32, 32, 3,  8}, 0x_3a9e_038e},
+            {Alpha_Add,   nil, {32, 32, 4,  8}, 0x_671f_880f},
         },
     },
     {
         "basn3p08", // 8 bit (256 color) paletted
         {
-            {Default,     OK, {32, 32, 3,  8}, 0x_ff6e_2940},
-            {Alpha_Add,   OK, {32, 32, 4,  8}, 0x_3952_8682},
+            {Default,     nil, {32, 32, 3,  8}, 0x_ff6e_2940},
+            {Alpha_Add,   nil, {32, 32, 4,  8}, 0x_3952_8682},
         },
     },
     {
         "basn4a08", // 8 bit grayscale + 8 bit alpha-channel
         {
-            {Default,     OK, {32, 32, 4,  8}, 0x_905d_5b60},
-            {Premul_Drop, OK, {32, 32, 3,  8}, 0x_8c36_b12c},
+            {Default,     nil, {32, 32, 4,  8}, 0x_905d_5b60},
+            {Premul_Drop, nil, {32, 32, 3,  8}, 0x_8c36_b12c},
         },
     },
     {
         "basn4a16", // 16 bit grayscale + 16 bit alpha-channel
         {
-            {Default,     OK, {32, 32, 4, 16}, 0x_3000_e35c},
-            {Premul_Drop, OK, {32, 32, 3, 16}, 0x_0276_254b},
+            {Default,     nil, {32, 32, 4, 16}, 0x_3000_e35c},
+            {Premul_Drop, nil, {32, 32, 3, 16}, 0x_0276_254b},
         },
     },
     {
         "basn6a08", // 3x8 bits rgb color + 8 bit alpha-channel
         {
-            {Default,     OK, {32, 32, 4,  8}, 0x_a74d_f32c},
-            {Premul_Drop, OK, {32, 32, 3,  8}, 0x_3a5b_8b1c},
+            {Default,     nil, {32, 32, 4,  8}, 0x_a74d_f32c},
+            {Premul_Drop, nil, {32, 32, 3,  8}, 0x_3a5b_8b1c},
         },
     },
     {
         "basn6a16", // 3x16 bits rgb color + 16 bit alpha-channel
         {
-            {Default,     OK, {32, 32, 4, 16}, 0x_087b_e531},
-            {Premul_Drop, OK, {32, 32, 3, 16}, 0x_de9d_19fd},
+            {Default,     nil, {32, 32, 4, 16}, 0x_087b_e531},
+            {Premul_Drop, nil, {32, 32, 3, 16}, 0x_de9d_19fd},
         },
     },
 };
@@ -234,106 +233,106 @@ Interlaced_PNG_Tests  := []PNG_Test{
     {
         "basi0g01", // Black and white.
         {
-            {Default,     OK, {32, 32, 3,  8}, 0x_1d8b_1934},
-            {Alpha_Add,   OK, {32, 32, 4,  8}, 0x_0da2_8714},
+            {Default,     nil, {32, 32, 3,  8}, 0x_1d8b_1934},
+            {Alpha_Add,   nil, {32, 32, 4,  8}, 0x_0da2_8714},
         },
     },
     {
         "basi0g02", // 2 bit (4 level) grayscale
         {
-            {Default,     OK, {32, 32, 3,  8}, 0x_cce2_e274},
-            {Alpha_Add,   OK, {32, 32, 4,  8}, 0x_2e3f_e285},
+            {Default,     nil, {32, 32, 3,  8}, 0x_cce2_e274},
+            {Alpha_Add,   nil, {32, 32, 4,  8}, 0x_2e3f_e285},
         },
     },
     {
         "basi0g04", // 4 bit (16 level) grayscale
         {
-            {Default,     OK, {32, 32, 3,  8}, 0x_e6ed_c27d},
-            {Alpha_Add,   OK, {32, 32, 4,  8}, 0x_8d0f_641b},
+            {Default,     nil, {32, 32, 3,  8}, 0x_e6ed_c27d},
+            {Alpha_Add,   nil, {32, 32, 4,  8}, 0x_8d0f_641b},
         },
     },
     {
         "basi0g08", // 8 bit (256 level) grayscale
         {
-            {Default,     OK, {32, 32, 3,  8}, 0x_7e0a_8ab4},
-            {Alpha_Add,   OK, {32, 32, 4,  8}, 0x_c395_683c},
+            {Default,     nil, {32, 32, 3,  8}, 0x_7e0a_8ab4},
+            {Alpha_Add,   nil, {32, 32, 4,  8}, 0x_c395_683c},
         },
     },
     {
         "basi0g16", // 16 bit (64k level) grayscale
         {
-            {Default,     OK, {32, 32, 3, 16}, 0x_d6ae_7df7},
-            {Alpha_Add,   OK, {32, 32, 4, 16}, 0x_a9da_b1bf},
+            {Default,     nil, {32, 32, 3, 16}, 0x_d6ae_7df7},
+            {Alpha_Add,   nil, {32, 32, 4, 16}, 0x_a9da_b1bf},
         },
     },
     {
         "basi2c08", // 3x8 bits rgb color
         {
-            {Default,     OK, {32, 32, 3,  8}, 0x_7855_b9bf},
-            {Alpha_Add,   OK, {32, 32, 4,  8}, 0x_2fb5_4036},
+            {Default,     nil, {32, 32, 3,  8}, 0x_7855_b9bf},
+            {Alpha_Add,   nil, {32, 32, 4,  8}, 0x_2fb5_4036},
         },
     },
     {
         "basi2c16", // 3x16 bits rgb color
         {
-            {Default,     OK, {32, 32, 3, 16}, 0x_8ec6_de79},
-            {Alpha_Add,   OK, {32, 32, 4, 16}, 0x_0a7e_bae6},
+            {Default,     nil, {32, 32, 3, 16}, 0x_8ec6_de79},
+            {Alpha_Add,   nil, {32, 32, 4, 16}, 0x_0a7e_bae6},
         },
     },
     {
         "basi3p01", // 1 bit (2 color) paletted
         {
-            {Default,     OK, {32, 32, 3,  8}, 0x_31ec_284b},
-            {Alpha_Add,   OK, {32, 32, 4,  8}, 0x_4d84_31a4},
+            {Default,     nil, {32, 32, 3,  8}, 0x_31ec_284b},
+            {Alpha_Add,   nil, {32, 32, 4,  8}, 0x_4d84_31a4},
         },
     },
     {
         "basi3p02", // 2 bit (4 color) paletted
         {
-            {Default,     OK, {32, 32, 3,  8}, 0x_279a_463a},
-            {Alpha_Add,   OK, {32, 32, 4,  8}, 0x_e4db_b6bc},
+            {Default,     nil, {32, 32, 3,  8}, 0x_279a_463a},
+            {Alpha_Add,   nil, {32, 32, 4,  8}, 0x_e4db_b6bc},
         },
     },
     {
         "basi3p04", // 4 bit (16 color) paletted
         {
-            {Default,     OK, {32, 32, 3,  8}, 0x_3a9e_038e},
-            {Alpha_Add,   OK, {32, 32, 4,  8}, 0x_671f_880f},
+            {Default,     nil, {32, 32, 3,  8}, 0x_3a9e_038e},
+            {Alpha_Add,   nil, {32, 32, 4,  8}, 0x_671f_880f},
         },
     },
     {
         "basi3p08", // 8 bit (256 color) paletted
         {
-            {Default,     OK, {32, 32, 3,  8}, 0x_ff6e_2940},
-            {Alpha_Add,   OK, {32, 32, 4,  8}, 0x_3952_8682},
+            {Default,     nil, {32, 32, 3,  8}, 0x_ff6e_2940},
+            {Alpha_Add,   nil, {32, 32, 4,  8}, 0x_3952_8682},
         },
     },
     {
         "basi4a08", // 8 bit grayscale + 8 bit alpha-channel
         {
-            {Default,     OK, {32, 32, 4,  8}, 0x_905d_5b60},
-            {Premul_Drop, OK, {32, 32, 3,  8}, 0x_8c36_b12c},
+            {Default,     nil, {32, 32, 4,  8}, 0x_905d_5b60},
+            {Premul_Drop, nil, {32, 32, 3,  8}, 0x_8c36_b12c},
         },
     },
     {
         "basi4a16", // 16 bit grayscale + 16 bit alpha-channel
         {
-            {Default,     OK, {32, 32, 4, 16}, 0x_3000_e35c},
-            {Premul_Drop, OK, {32, 32, 3, 16}, 0x_0276_254b},
+            {Default,     nil, {32, 32, 4, 16}, 0x_3000_e35c},
+            {Premul_Drop, nil, {32, 32, 3, 16}, 0x_0276_254b},
         },
     },
     {
         "basi6a08", // 3x8 bits rgb color + 8 bit alpha-channel
         {
-            {Default,     OK, {32, 32, 4,  8}, 0x_a74d_f32c},
-            {Premul_Drop, OK, {32, 32, 3,  8}, 0x_3a5b_8b1c},
+            {Default,     nil, {32, 32, 4,  8}, 0x_a74d_f32c},
+            {Premul_Drop, nil, {32, 32, 3,  8}, 0x_3a5b_8b1c},
         },
     },
     {
         "basi6a16", // 3x16 bits rgb color + 16 bit alpha-channel
         {
-            {Default,     OK, {32, 32, 4, 16}, 0x_087b_e531},
-            {Premul_Drop, OK, {32, 32, 3, 16}, 0x_de9d_19fd},
+            {Default,     nil, {32, 32, 4, 16}, 0x_087b_e531},
+            {Premul_Drop, nil, {32, 32, 3, 16}, 0x_de9d_19fd},
         },
     },
 };
@@ -349,217 +348,217 @@ Odd_Sized_PNG_Tests   := []PNG_Test{
     {
         "s01i3p01", // 1x1 paletted file, interlaced
         {
-            {Default,     OK, { 1,  1, 3,  8}, 0x_d243_369f},
+            {Default,     nil, { 1,  1, 3,  8}, 0x_d243_369f},
         },
     },
     {
         "s01n3p01", // 1x1 paletted file, no interlacing
         {
-            {Default,     OK, { 1,  1, 3,  8}, 0x_d243_369f},
+            {Default,     nil, { 1,  1, 3,  8}, 0x_d243_369f},
         },
     },
     {
         "s02i3p01", // 2x2 paletted file, interlaced
         {
-            {Default,     OK, { 2,  2, 3,  8}, 0x_9e93_1d85},
+            {Default,     nil, { 2,  2, 3,  8}, 0x_9e93_1d85},
         },
     },
     {
         "s02n3p01", // 2x2 paletted file, no interlacing
         {
-            {Default,     OK, { 2,  2, 3,  8}, 0x_9e93_1d85},
+            {Default,     nil, { 2,  2, 3,  8}, 0x_9e93_1d85},
         },
     },
     {
         "s03i3p01", // 3x3 paletted file, interlaced
         {
-            {Default,     OK, { 3,  3, 3,  8}, 0x_6916_380e},
+            {Default,     nil, { 3,  3, 3,  8}, 0x_6916_380e},
         },
     },
     {
         "s03n3p01", // 3x3 paletted file, no interlacing
         {
-            {Default,     OK, { 3,  3, 3,  8}, 0x_6916_380e},
+            {Default,     nil, { 3,  3, 3,  8}, 0x_6916_380e},
         },
     },
     {
         "s04i3p01", // 4x4 paletted file, interlaced
         {
-            {Default,     OK, { 4,  4, 3,  8}, 0x_c2e0_d49b},
+            {Default,     nil, { 4,  4, 3,  8}, 0x_c2e0_d49b},
         },
     },
     {
         "s04n3p01", // 4x4 paletted file, no interlacing
         {
-            {Default,     OK, { 4,  4, 3,  8}, 0x_c2e0_d49b},
+            {Default,     nil, { 4,  4, 3,  8}, 0x_c2e0_d49b},
         },
     },
     {
         "s05i3p02", // 5x5 paletted file, interlaced
         {
-            {Default,     OK, { 5,  5, 3,  8}, 0x_1242_b6fb},
+            {Default,     nil, { 5,  5, 3,  8}, 0x_1242_b6fb},
         },
     },
     {
         "s05n3p02", // 5x5 paletted file, no interlacing
         {
-            {Default,     OK, { 5,  5, 3,  8}, 0x_1242_b6fb},
+            {Default,     nil, { 5,  5, 3,  8}, 0x_1242_b6fb},
         },
     },
     {
         "s06i3p02", // 6x6 paletted file, interlaced
         {
-            {Default,     OK, { 6,  6, 3,  8}, 0x_d758_9540},
+            {Default,     nil, { 6,  6, 3,  8}, 0x_d758_9540},
         },
     },
     {
         "s06n3p02", // 6x6 paletted file, no interlacing
         {
-            {Default,     OK, { 6,  6, 3,  8}, 0x_d758_9540},
+            {Default,     nil, { 6,  6, 3,  8}, 0x_d758_9540},
         },
     },
     {
         "s07i3p02", // 7x7 paletted file, interlaced
         {
-            {Default,     OK, { 7,  7, 3,  8}, 0x_d2cc_f489},
+            {Default,     nil, { 7,  7, 3,  8}, 0x_d2cc_f489},
         },
     },
     {
         "s07n3p02", // 7x7 paletted file, no interlacing
         {
-            {Default,     OK, { 7,  7, 3,  8}, 0x_d2cc_f489},
+            {Default,     nil, { 7,  7, 3,  8}, 0x_d2cc_f489},
         },
     },
     {
         "s08i3p02", // 8x8 paletted file, interlaced
         {
-            {Default,     OK, { 8,  8, 3,  8}, 0x_2ba1_b03e},
+            {Default,     nil, { 8,  8, 3,  8}, 0x_2ba1_b03e},
         },
     },
     {
         "s08n3p02", // 8x8 paletted file, no interlacing
         {
-            {Default,     OK, { 8,  8, 3,  8}, 0x_2ba1_b03e},
+            {Default,     nil, { 8,  8, 3,  8}, 0x_2ba1_b03e},
         },
     },
     {
         "s09i3p02", // 9x9 paletted file, interlaced
         {
-            {Default,     OK, { 9,  9, 3,  8}, 0x_9762_d2ed},
+            {Default,     nil, { 9,  9, 3,  8}, 0x_9762_d2ed},
         },
     },
     {
         "s09n3p02", // 9x9 paletted file, no interlacing
         {
-            {Default,     OK, { 9,  9, 3,  8}, 0x_9762_d2ed},
+            {Default,     nil, { 9,  9, 3,  8}, 0x_9762_d2ed},
         },
     },
     {
         "s32i3p04", // 32x32 paletted file, interlaced
         {
-            {Default,     OK, {32, 32, 3,  8}, 0x_ad01_f44d},
+            {Default,     nil, {32, 32, 3,  8}, 0x_ad01_f44d},
         },
     },
     {
         "s32n3p04", // 32x32 paletted file, no interlacing
         {
-            {Default,     OK, {32, 32, 3,  8}, 0x_ad01_f44d},
+            {Default,     nil, {32, 32, 3,  8}, 0x_ad01_f44d},
         },
     },
     {
         "s33i3p04", // 33x33 paletted file, interlaced
         {
-            {Default,     OK, {33, 33, 3,  8}, 0x_d2f4_ae68},
+            {Default,     nil, {33, 33, 3,  8}, 0x_d2f4_ae68},
         },
     },
     {
         "s33n3p04", // 33x33 paletted file, no interlacing
         {
-            {Default,     OK, {33, 33, 3,  8}, 0x_d2f4_ae68},
+            {Default,     nil, {33, 33, 3,  8}, 0x_d2f4_ae68},
         },
     },
     {
         "s34i3p04", // 34x34 paletted file, interlaced
         {
-            {Default,     OK, {34, 34, 3,  8}, 0x_bbed_a3f7},
+            {Default,     nil, {34, 34, 3,  8}, 0x_bbed_a3f7},
         },
     },
     {
         "s34n3p04", // 34x34 paletted file, no interlacing
         {
-            {Default,     OK, {34, 34, 3,  8}, 0x_bbed_a3f7},
+            {Default,     nil, {34, 34, 3,  8}, 0x_bbed_a3f7},
         },
     },
     {
         "s35i3p04", // 35x35 paletted file, interlaced
         {
-            {Default,     OK, {35, 35, 3,  8}, 0x_9929_3acf},
+            {Default,     nil, {35, 35, 3,  8}, 0x_9929_3acf},
         },
     },
     {
         "s35n3p04", // 35x35 paletted file, no interlacing
         {
-            {Default,     OK, {35, 35, 3,  8}, 0x_9929_3acf},
+            {Default,     nil, {35, 35, 3,  8}, 0x_9929_3acf},
         },
     },
     {
         "s36i3p04", // 36x36 paletted file, interlaced
         {
-            {Default,     OK, {36, 36, 3,  8}, 0x_f51a_96e0},
+            {Default,     nil, {36, 36, 3,  8}, 0x_f51a_96e0},
         },
     },
     {
         "s36n3p04", // 36x36 paletted file, no interlacing
         {
-            {Default,     OK, {36, 36, 3,  8}, 0x_f51a_96e0},
+            {Default,     nil, {36, 36, 3,  8}, 0x_f51a_96e0},
         },
     },
     {
         "s37i3p04", // 37x37 paletted file, interlaced
         {
-            {Default,     OK, {37, 37, 3,  8}, 0x_9207_58a4},
+            {Default,     nil, {37, 37, 3,  8}, 0x_9207_58a4},
         },
     },
     {
         "s37n3p04", // 37x37 paletted file, no interlacing
         {
-            {Default,     OK, {37, 37, 3,  8}, 0x_9207_58a4},
+            {Default,     nil, {37, 37, 3,  8}, 0x_9207_58a4},
         },
     },
     {
         "s38i3p04", // 38x38 paletted file, interlaced
         {
-            {Default,     OK, {38, 38, 3,  8}, 0x_eb3b_f324},
+            {Default,     nil, {38, 38, 3,  8}, 0x_eb3b_f324},
         },
     },
     {
         "s38n3p04", // 38x38 paletted file, no interlacing
         {
-            {Default,     OK, {38, 38, 3,  8}, 0x_eb3b_f324},
+            {Default,     nil, {38, 38, 3,  8}, 0x_eb3b_f324},
         },
     },
     {
         "s39i3p04", // 39x39 paletted file, interlaced
         {
-            {Default,     OK, {39, 39, 3,  8}, 0x_c06d_7da1},
+            {Default,     nil, {39, 39, 3,  8}, 0x_c06d_7da1},
         },
     },
     {
         "s39n3p04", // 39x39 paletted file, no interlacing
         {
-            {Default,     OK, {39, 39, 3,  8}, 0x_c06d_7da1},
+            {Default,     nil, {39, 39, 3,  8}, 0x_c06d_7da1},
         },
     },
     {
         "s40i3p04", // 40x40 paletted file, interlaced
         {
-            {Default,     OK, {40, 40, 3,  8}, 0x_0d46_58a0},
+            {Default,     nil, {40, 40, 3,  8}, 0x_0d46_58a0},
         },
     },
     {
         "s40n3p04", // 40x40 paletted file, no interlacing
         {
-            {Default,     OK, {40, 40, 3,  8}, 0x_0d46_58a0},
+            {Default,     nil, {40, 40, 3,  8}, 0x_0d46_58a0},
         },
     },
 };
@@ -576,77 +575,77 @@ PNG_bKGD_Tests        := []PNG_Test{
     {
         "bgai4a08", // 8 bit grayscale, alpha, no background chunk, interlaced
         {
-            {Default,     OK, {32, 32, 4,  8}, 0x_905d_5b60},
+            {Default,     nil, {32, 32, 4,  8}, 0x_905d_5b60},
             // No background, therefore no background blending and 3 channels.
-            {Blend_BG,    OK, {32, 32, 4,  8}, 0x_905d_5b60},
+            {Blend_BG,    nil, {32, 32, 4,  8}, 0x_905d_5b60},
         },
     },
     {
         "bgai4a16", // 16 bit grayscale, alpha, no background chunk, interlaced
         {
-            {Default,     OK, {32, 32, 4, 16}, 0x_3000_e35c},
+            {Default,     nil, {32, 32, 4, 16}, 0x_3000_e35c},
             // No background, therefore no background blending and 3 channels.
-            {Blend_BG,    OK, {32, 32, 4, 16}, 0x_3000_e35c},
+            {Blend_BG,    nil, {32, 32, 4, 16}, 0x_3000_e35c},
         },
     },
     {
         "bgan6a08", // 3x8 bits rgb color, alpha, no background chunk
         {
-            {Default,     OK, {32, 32, 4,  8}, 0x_a74d_f32c},
+            {Default,     nil, {32, 32, 4,  8}, 0x_a74d_f32c},
             // No background, therefore no background blending and 3 channels.
-            {Blend_BG,    OK, {32, 32, 4,  8}, 0x_a74d_f32c},
+            {Blend_BG,    nil, {32, 32, 4,  8}, 0x_a74d_f32c},
         },
     },
     {
         "bgan6a16", // 3x16 bits rgb color, alpha, no background chunk
         {
-            {Default,     OK, {32, 32, 4, 16}, 0x_087b_e531},
+            {Default,     nil, {32, 32, 4, 16}, 0x_087b_e531},
             // No background, therefore no background blending and 3 channels.
-            {Blend_BG,    OK, {32, 32, 4, 16}, 0x_087b_e531},
+            {Blend_BG,    nil, {32, 32, 4, 16}, 0x_087b_e531},
         },
     },
     {
         "bgbn4a08", // 8 bit grayscale, alpha, black background chunk
         {
-            {Default,       OK, {32, 32, 4,  8}, 0x_905d_5b60},
-            {Blend_BG,      OK, {32, 32, 3,  8}, 0x_8c36_b12c},
+            {Default,       nil, {32, 32, 4,  8}, 0x_905d_5b60},
+            {Blend_BG,      nil, {32, 32, 3,  8}, 0x_8c36_b12c},
             /*
                 Blend with background but keep useless alpha channel now set to 255.
             */
-            {Blend_BG_Keep, OK, {32, 32, 4,  8}, 0x_d4a2_3649},
+            {Blend_BG_Keep, nil, {32, 32, 4,  8}, 0x_d4a2_3649},
         },
     },
     {
         "bggn4a16", // 16 bit grayscale, alpha, gray background chunk
         {
-            {Default,       OK, {32, 32, 4, 16}, 0x_3000_e35c},
-            {Blend_BG,      OK, {32, 32, 3, 16}, 0x_0b49_0dc1},
+            {Default,       nil, {32, 32, 4, 16}, 0x_3000_e35c},
+            {Blend_BG,      nil, {32, 32, 3, 16}, 0x_0b49_0dc1},
             /*
                 Blend with background but keep useless alpha channel.
             */
-            {Blend_BG_Keep, OK, {32, 32, 4, 16}, 0x_073f_eb13},
+            {Blend_BG_Keep, nil, {32, 32, 4, 16}, 0x_073f_eb13},
         },
     },
     {
         "bgwn6a08", // 3x8 bits rgb color, alpha, white background chunk
         {
-            {Default,       OK, {32, 32, 4,  8}, 0x_a74d_f32c},
-            {Blend_BG,      OK, {32, 32, 3,  8}, 0x_b60d_d910},
+            {Default,       nil, {32, 32, 4,  8}, 0x_a74d_f32c},
+            {Blend_BG,      nil, {32, 32, 3,  8}, 0x_b60d_d910},
             /*
                 Blend with background but keep useless alpha channel.
             */
-            {Blend_BG_Keep, OK, {32, 32, 4,  8}, 0x_01ce_2ec6},
+            {Blend_BG_Keep, nil, {32, 32, 4,  8}, 0x_01ce_2ec6},
         },
     },
     {
         "bgyn6a16", // 3x16 bits rgb color, alpha, yellow background chunk
         {
-            {Default,       OK, {32, 32, 4, 16}, 0x_087b_e531},
-            {Blend_BG,      OK, {32, 32, 3, 16}, 0x_1a16_7d87},
+            {Default,       nil, {32, 32, 4, 16}, 0x_087b_e531},
+            {Blend_BG,      nil, {32, 32, 3, 16}, 0x_1a16_7d87},
             /*
                 Blend with background but keep useless alpha channel.
             */
-            {Blend_BG_Keep, OK, {32, 32, 4, 16}, 0x_4d73_9955},
+            {Blend_BG_Keep, nil, {32, 32, 4, 16}, 0x_4d73_9955},
         },
     },
 };
@@ -663,152 +662,152 @@ PNG_tRNS_Tests        := []PNG_Test{
     {
         "tbbn0g04", // transparent, black background chunk
         {
-            {Default,       OK, {32, 32, 4,  8}, 0x_5c8e_af83},
-            {Blend_BG,      OK, {32, 32, 3,  8}, 0x_9b95_ca37},
+            {Default,       nil, {32, 32, 4,  8}, 0x_5c8e_af83},
+            {Blend_BG,      nil, {32, 32, 3,  8}, 0x_9b95_ca37},
             /*
                 Blend with background but keep useless alpha channel now set to 255.
             */
-            {Blend_BG_Keep, OK, {32, 32, 4,  8}, 0x_5ea6_fd32},
+            {Blend_BG_Keep, nil, {32, 32, 4,  8}, 0x_5ea6_fd32},
         },
     },
     {
         "tbbn2c16", // transparent, blue background chunk
         {
-            {Default,       OK, {32, 32, 4, 16}, 0x_07fe_8090},
-            {Blend_BG,      OK, {32, 32, 3, 16}, 0x_5863_8fa2},
+            {Default,       nil, {32, 32, 4, 16}, 0x_07fe_8090},
+            {Blend_BG,      nil, {32, 32, 3, 16}, 0x_5863_8fa2},
             /*
                 Blend with background but keep useless alpha channel now set to 65535.
             */
-            {Blend_BG_Keep, OK, {32, 32, 4, 16}, 0x_be56_b8fa},
+            {Blend_BG_Keep, nil, {32, 32, 4, 16}, 0x_be56_b8fa},
         },
     },
     {
         "tbbn3p08", // transparent, black background chunk
         {
-            {Default,       OK, {32, 32, 4,  8}, 0x_9d56_cd67},
-            {Blend_BG,      OK, {32, 32, 3,  8}, 0x_8071_0060},
+            {Default,       nil, {32, 32, 4,  8}, 0x_9d56_cd67},
+            {Blend_BG,      nil, {32, 32, 3,  8}, 0x_8071_0060},
             /*
                 Blend with background but keep useless alpha channel now set to 255.
             */
-            {Blend_BG_Keep, OK, {32, 32, 4,  8}, 0x_c821_11f1},
+            {Blend_BG_Keep, nil, {32, 32, 4,  8}, 0x_c821_11f1},
         },
     },
     {
         "tbgn2c16", // transparent, green background chunk
         {
-            {Default,       OK, {32, 32, 4, 16}, 0x_07fe_8090},
-            {Blend_BG,      OK, {32, 32, 3, 16}, 0x_70da_708a},
+            {Default,       nil, {32, 32, 4, 16}, 0x_07fe_8090},
+            {Blend_BG,      nil, {32, 32, 3, 16}, 0x_70da_708a},
             /*
                 Blend with background but keep useless alpha channel now set to 65535.
             */
-            {Blend_BG_Keep, OK, {32, 32, 4, 16}, 0x_97b3_a190},
+            {Blend_BG_Keep, nil, {32, 32, 4, 16}, 0x_97b3_a190},
         },
     },
     {
         "tbbn3p08", // transparent, black background chunk
         {
-            {Default,       OK, {32, 32, 4,  8}, 0x_9d56_cd67},
-            {Blend_BG,      OK, {32, 32, 3,  8}, 0x_8071_0060},
+            {Default,       nil, {32, 32, 4,  8}, 0x_9d56_cd67},
+            {Blend_BG,      nil, {32, 32, 3,  8}, 0x_8071_0060},
             /*
                 Blend with background but keep useless alpha channel now set to 255.
             */
-            {Blend_BG_Keep, OK, {32, 32, 4,  8}, 0x_c821_11f1},
+            {Blend_BG_Keep, nil, {32, 32, 4,  8}, 0x_c821_11f1},
         },
     },
     {
         "tbgn3p08", // transparent, light-gray background chunk
         {
-            {Default,       OK, {32, 32, 4,  8}, 0x_9d56_cd67},
-            {Blend_BG,      OK, {32, 32, 3,  8}, 0x_078b_74c4},
+            {Default,       nil, {32, 32, 4,  8}, 0x_9d56_cd67},
+            {Blend_BG,      nil, {32, 32, 3,  8}, 0x_078b_74c4},
             /*
                 Blend with background but keep useless alpha channel now set to 255.
             */
-            {Blend_BG_Keep, OK, {32, 32, 4,  8}, 0x_d103_068d},
+            {Blend_BG_Keep, nil, {32, 32, 4,  8}, 0x_d103_068d},
         },
     },
     {
         "tbrn2c08", // transparent, red background chunk
         {
-            {Default,       OK, {32, 32, 4,  8}, 0x_0370_ef89},
-            {Blend_BG,      OK, {32, 32, 3,  8}, 0x_6f68_a445},
+            {Default,       nil, {32, 32, 4,  8}, 0x_0370_ef89},
+            {Blend_BG,      nil, {32, 32, 3,  8}, 0x_6f68_a445},
             /*
                 Blend with background but keep useless alpha channel now set to 255.
             */
-            {Blend_BG_Keep, OK, {32, 32, 4,  8}, 0x_2610_a9b7},
+            {Blend_BG_Keep, nil, {32, 32, 4,  8}, 0x_2610_a9b7},
         },
     },
     {
         "tbwn0g16", // transparent, white background chunk
         {
-            {Default,       OK, {32, 32, 4, 16}, 0x_5386_656a},
-            {Blend_BG,      OK, {32, 32, 3, 16}, 0x_6bdd_8c69},
+            {Default,       nil, {32, 32, 4, 16}, 0x_5386_656a},
+            {Blend_BG,      nil, {32, 32, 3, 16}, 0x_6bdd_8c69},
             /*
                 Blend with background but keep useless alpha channel now set to 65535.
             */
-            {Blend_BG_Keep, OK, {32, 32, 4, 16}, 0x_1157_5f08},
+            {Blend_BG_Keep, nil, {32, 32, 4, 16}, 0x_1157_5f08},
         },
     },
     {
         "tbwn3p08", // transparent, white background chunk
         {
-            {Default,       OK, {32, 32, 4,  8}, 0x_9d56_cd67},
-            {Blend_BG,      OK, {32, 32, 3,  8}, 0x_4476_4e96},
+            {Default,       nil, {32, 32, 4,  8}, 0x_9d56_cd67},
+            {Blend_BG,      nil, {32, 32, 3,  8}, 0x_4476_4e96},
             /*
                 Blend with background but keep useless alpha channel now set to 255.
             */
-            {Blend_BG_Keep, OK, {32, 32, 4,  8}, 0x_dd92_0d33},
+            {Blend_BG_Keep, nil, {32, 32, 4,  8}, 0x_dd92_0d33},
         },
     },
     {
         "tbyn3p08", // transparent, yellow background chunk
         {
-            {Default,       OK, {32, 32, 4,  8}, 0x_9d56_cd67},
-            {Blend_BG,      OK, {32, 32, 3,  8}, 0x_18b9_da39},
+            {Default,       nil, {32, 32, 4,  8}, 0x_9d56_cd67},
+            {Blend_BG,      nil, {32, 32, 3,  8}, 0x_18b9_da39},
             /*
                 Blend with background but keep useless alpha channel now set to 255.
             */
-            {Blend_BG_Keep, OK, {32, 32, 4,  8}, 0x_b1d4_5c1e},
+            {Blend_BG_Keep, nil, {32, 32, 4,  8}, 0x_b1d4_5c1e},
         },
     },
     {
         "tp0n0g08", // not transparent for reference (logo on gray)
         {
-            {Default,       OK, {32, 32, 3,  8}, 0x_dfa9_515c},
-            {Blend_BG,      OK, {32, 32, 3,  8}, 0x_dfa9_515c},
-            {Blend_BG_Keep, OK, {32, 32, 4,  8}, 0x_5796_5874},
+            {Default,       nil, {32, 32, 3,  8}, 0x_dfa9_515c},
+            {Blend_BG,      nil, {32, 32, 3,  8}, 0x_dfa9_515c},
+            {Blend_BG_Keep, nil, {32, 32, 4,  8}, 0x_5796_5874},
         },
     },
     {
         "tp0n2c08", // not transparent for reference (logo on gray)
         {
-            {Default,       OK, {32, 32, 3,  8}, 0x_b426_b350},
-            {Blend_BG,      OK, {32, 32, 3,  8}, 0x_b426_b350},
-            {Blend_BG_Keep, OK, {32, 32, 4,  8}, 0x_679d_24b4},
+            {Default,       nil, {32, 32, 3,  8}, 0x_b426_b350},
+            {Blend_BG,      nil, {32, 32, 3,  8}, 0x_b426_b350},
+            {Blend_BG_Keep, nil, {32, 32, 4,  8}, 0x_679d_24b4},
         },
     },
     {
         "tp0n3p08", // not transparent for reference (logo on gray)
         {
-            {Default,       OK, {32, 32, 3,  8}, 0x_1549_3236},
-            {Blend_BG,      OK, {32, 32, 3,  8}, 0x_1549_3236},
-            {Blend_BG_Keep, OK, {32, 32, 4,  8}, 0x_130a_a165},
+            {Default,       nil, {32, 32, 3,  8}, 0x_1549_3236},
+            {Blend_BG,      nil, {32, 32, 3,  8}, 0x_1549_3236},
+            {Blend_BG_Keep, nil, {32, 32, 4,  8}, 0x_130a_a165},
         },
     },
     {
         "tp1n3p08", // transparent, but no background chunk
         {
-            {Default,       OK, {32, 32, 4,  8}, 0x_9d56_cd67},
-            {Blend_BG,      OK, {32, 32, 4,  8}, 0x_9d56_cd67},
-            {Blend_BG_Keep, OK, {32, 32, 4,  8}, 0x_9d56_cd67},
+            {Default,       nil, {32, 32, 4,  8}, 0x_9d56_cd67},
+            {Blend_BG,      nil, {32, 32, 4,  8}, 0x_9d56_cd67},
+            {Blend_BG_Keep, nil, {32, 32, 4,  8}, 0x_9d56_cd67},
         },
     },
     {
         "tm3n3p02", // multiple levels of transparency, 3 entries
         {
-            {Default,       OK, {32, 32, 4,  8}, 0x_e7da_a7f5},
-            {Blend_BG,      OK, {32, 32, 4,  8}, 0x_e7da_a7f5},
-            {Blend_BG_Keep, OK, {32, 32, 4,  8}, 0x_e7da_a7f5},
-            {Just_Drop,     OK, {32, 32, 3,  8}, 0x_e7f1_a455},
+            {Default,       nil, {32, 32, 4,  8}, 0x_e7da_a7f5},
+            {Blend_BG,      nil, {32, 32, 4,  8}, 0x_e7da_a7f5},
+            {Blend_BG_Keep, nil, {32, 32, 4,  8}, 0x_e7da_a7f5},
+            {Just_Drop,     nil, {32, 32, 3,  8}, 0x_e7f1_a455},
         },
     },
 };
@@ -825,69 +824,69 @@ PNG_Filter_Tests      := []PNG_Test{
     {
         "f00n0g08", // grayscale, no interlacing, filter-type 0
         {
-            {Default,       OK, {32, 32, 3,  8}, 0x_3f6b_9bc5},
+            {Default,       nil, {32, 32, 3,  8}, 0x_3f6b_9bc5},
         },
     },
     {
         "f00n2c08", // color, no interlacing, filter-type 0
         {
-            {Default,       OK, {32, 32, 3,  8}, 0x_3f1d_66ad},
+            {Default,       nil, {32, 32, 3,  8}, 0x_3f1d_66ad},
         },
 
     },
     {
         "f01n0g08", // grayscale, no interlacing, filter-type 1
         {
-            {Default,       OK, {32, 32, 3,  8}, 0x_0ff8_9d6c},
+            {Default,       nil, {32, 32, 3,  8}, 0x_0ff8_9d6c},
         },
 
     },
     {
         "f01n2c08", // color, no interlacing, filter-type 1
         {
-            {Default,       OK, {32, 32, 3,  8}, 0x_11c1_b27e},
+            {Default,       nil, {32, 32, 3,  8}, 0x_11c1_b27e},
         },
     },
     {
         "f02n0g08", // grayscale, no interlacing, filter-type 2
         {
-            {Default,       OK, {32, 32, 3,  8}, 0x_a86b_4c1d},
+            {Default,       nil, {32, 32, 3,  8}, 0x_a86b_4c1d},
         },
     },
     {
         "f02n2c08", // color, no interlacing, filter-type 2
         {
-            {Default,       OK, {32, 32, 3,  8}, 0x_7f1c_a785},
+            {Default,       nil, {32, 32, 3,  8}, 0x_7f1c_a785},
         },
     },
     {
         "f03n0g08", // grayscale, no interlacing, filter-type 3
         {
-            {Default,       OK, {32, 32, 3,  8}, 0x_66de_99f1},
+            {Default,       nil, {32, 32, 3,  8}, 0x_66de_99f1},
         },
     },
     {
         "f03n2c08", // color, no interlacing, filter-type 3
         {
-            {Default,       OK, {32, 32, 3,  8}, 0x_3164_5d89},
+            {Default,       nil, {32, 32, 3,  8}, 0x_3164_5d89},
         },
     },
     {
         "f04n0g08", // grayscale, no interlacing, filter-type 4
         {
-            {Default,       OK, {32, 32, 3,  8}, 0x_f655_bb7d},
+            {Default,       nil, {32, 32, 3,  8}, 0x_f655_bb7d},
         },
     },
     {
         "f04n2c08", // color, no interlacing, filter-type 4
         {
-            {Default,       OK, {32, 32, 3,  8}, 0x_7705_6a6f},
+            {Default,       nil, {32, 32, 3,  8}, 0x_7705_6a6f},
         },
     },
     {
         "f99n0g04", // bit-depth 4, filter changing per scanline
         {
-            {Default,       OK, {32, 32, 3,  8}, 0x_d302_6ad9},
+            {Default,       nil, {32, 32, 3,  8}, 0x_d302_6ad9},
         },
     },
 };
@@ -904,49 +903,49 @@ PNG_Varied_IDAT_Tests := []PNG_Test{
     {
         "oi1n0g16", // grayscale mother image with 1 idat-chunk
         {
-            {Default,       OK, {32, 32, 3, 16}, 0x_d6ae_7df7},
+            {Default,       nil, {32, 32, 3, 16}, 0x_d6ae_7df7},
         },
     },
     {
         "oi1n2c16", // color mother image with 1 idat-chunk
         {
-            {Default,       OK, {32, 32, 3, 16}, 0x_8ec6_de79},
+            {Default,       nil, {32, 32, 3, 16}, 0x_8ec6_de79},
         },
     },
     {
         "oi2n0g16", // grayscale image with 2 idat-chunks
         {
-            {Default,       OK, {32, 32, 3, 16}, 0x_d6ae_7df7},
+            {Default,       nil, {32, 32, 3, 16}, 0x_d6ae_7df7},
         },
     },
     {
         "oi2n2c16", // color image with 2 idat-chunks
         {
-            {Default,       OK, {32, 32, 3, 16}, 0x_8ec6_de79},
+            {Default,       nil, {32, 32, 3, 16}, 0x_8ec6_de79},
         },
     },
     {
         "oi4n0g16", // grayscale image with 4 unequal sized idat-chunks
         {
-            {Default,       OK, {32, 32, 3, 16}, 0x_d6ae_7df7},
+            {Default,       nil, {32, 32, 3, 16}, 0x_d6ae_7df7},
         },
     },
     {
         "oi4n2c16", // color image with 4 unequal sized idat-chunks
         {
-            {Default,       OK, {32, 32, 3, 16}, 0x_8ec6_de79},
+            {Default,       nil, {32, 32, 3, 16}, 0x_8ec6_de79},
         },
     },
     {
         "oi9n0g16", // grayscale image with all idat-chunks length one
         {
-            {Default,       OK, {32, 32, 3, 16}, 0x_d6ae_7df7},
+            {Default,       nil, {32, 32, 3, 16}, 0x_d6ae_7df7},
         },
     },
     {
         "oi9n2c16", // color image with all idat-chunks length one
         {
-            {Default,       OK, {32, 32, 3, 16}, 0x_8ec6_de79},
+            {Default,       nil, {32, 32, 3, 16}, 0x_8ec6_de79},
         },
     },
 };
@@ -963,25 +962,25 @@ PNG_ZLIB_Levels_Tests := []PNG_Test{
     {
         "z00n2c08", // color, no interlacing, compression level 0 (none)
         {
-            {Default,         OK, {32, 32, 3,  8}, 0x_f8f7_d651},
+            {Default,         nil, {32, 32, 3,  8}, 0x_f8f7_d651},
         },
     },
     {
         "z03n2c08", // color, no interlacing, compression level 3
         {
-            {Default,         OK, {32, 32, 3,  8}, 0x_f8f7_d651},
+            {Default,         nil, {32, 32, 3,  8}, 0x_f8f7_d651},
         },
     },
     {
         "z06n2c08", // color, no interlacing, compression level 6 (default)
         {
-            {Default,         OK, {32, 32, 3,  8}, 0x_f8f7_d651},
+            {Default,         nil, {32, 32, 3,  8}, 0x_f8f7_d651},
         },
     },
     {
         "z09n2c08", // color, no interlacing, compression level 9 (maximum)
         {
-            {Default,         OK, {32, 32, 3,  8}, 0x_f8f7_d651},
+            {Default,         nil, {32, 32, 3,  8}, 0x_f8f7_d651},
         },
     },
 };
@@ -998,37 +997,37 @@ PNG_sPAL_Tests        := []PNG_Test{
     {
         "pp0n2c16", // six-cube palette-chunk in true-color image
         {
-            {Return_Metadata, OK, {32, 32, 3, 16}, 0x_8ec6_de79},
+            {Return_Metadata, nil, {32, 32, 3, 16}, 0x_8ec6_de79},
         },
     },
     {
         "pp0n6a08", // six-cube palette-chunk in true-color+alpha image
         {
-            {Return_Metadata, OK, {32, 32, 4,  8}, 0x_0ee0_5c61},
+            {Return_Metadata, nil, {32, 32, 4,  8}, 0x_0ee0_5c61},
         },
     },
     {
         "ps1n0g08", // six-cube suggested palette (1 byte) in grayscale image
         {
-            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_7e0a_8ab4},
+            {Return_Metadata, nil, {32, 32, 3,  8}, 0x_7e0a_8ab4},
         },
     },
     {
         "ps1n2c16", // six-cube suggested palette (1 byte) in true-color image
         {
-            {Return_Metadata, OK, {32, 32, 3, 16}, 0x_8ec6_de79},
+            {Return_Metadata, nil, {32, 32, 3, 16}, 0x_8ec6_de79},
         },
     },
     {
         "ps2n0g08", // six-cube suggested palette (2 bytes) in grayscale image
         {
-            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_7e0a_8ab4},
+            {Return_Metadata, nil, {32, 32, 3,  8}, 0x_7e0a_8ab4},
         },
     },
     {
         "ps2n2c16", // six-cube suggested palette (2 bytes) in true-color image
         {
-            {Return_Metadata, OK, {32, 32, 3, 16}, 0x_8ec6_de79},
+            {Return_Metadata, nil, {32, 32, 3, 16}, 0x_8ec6_de79},
         },
     },
 };
@@ -1045,157 +1044,157 @@ PNG_Ancillary_Tests   := []PNG_Test{
     {
         "ccwn2c08", // chroma chunk w:0.3127,0.3290 r:0.64,0.33 g:0.30,0.60 b:0.15,0.06
         {
-            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_61b6_9e8e},
+            {Return_Metadata, nil, {32, 32, 3,  8}, 0x_61b6_9e8e},
         },
     },
     {
         "ccwn3p08", // chroma chunk w:0.3127,0.3290 r:0.64,0.33 g:0.30,0.60 b:0.15,0.06
         {
-            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_2e1d_8ef1},
+            {Return_Metadata, nil, {32, 32, 3,  8}, 0x_2e1d_8ef1},
         },
     },
     {
         "cdfn2c08", // physical pixel dimensions, 8x32 flat pixels
         {
-            {Return_Metadata, OK, { 8, 32, 3,  8}, 0x_99af_40a3},
+            {Return_Metadata, nil, { 8, 32, 3,  8}, 0x_99af_40a3},
         },
     },
     {
         "cdhn2c08", // physical pixel dimensions, 32x8 high pixels
         {
-            {Return_Metadata, OK, {32,  8, 3,  8}, 0x_84a4_ef40},
+            {Return_Metadata, nil, {32,  8, 3,  8}, 0x_84a4_ef40},
         },
     },
     {
         "cdsn2c08", // physical pixel dimensions, 8x8 square pixels
         {
-            {Return_Metadata, OK, { 8,  8, 3,  8}, 0x_82b2_6daf},
+            {Return_Metadata, nil, { 8,  8, 3,  8}, 0x_82b2_6daf},
         },
     },
     {
         "cdun2c08", // physical pixel dimensions, 1000 pixels per 1 meter
         {
-            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_ee50_e3ca},
+            {Return_Metadata, nil, {32, 32, 3,  8}, 0x_ee50_e3ca},
         },
     },
     {
         "ch1n3p04", // histogram 15 colors
         {
-            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_3a9e_038e},
+            {Return_Metadata, nil, {32, 32, 3,  8}, 0x_3a9e_038e},
         },
     },
     {
         "ch2n3p08", // histogram 256 colors
         {
-            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_ff6e_2940},
+            {Return_Metadata, nil, {32, 32, 3,  8}, 0x_ff6e_2940},
         },
     },
     {
         "cm0n0g04", // modification time, 01-jan-2000 12:34:56
         {
-            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_c6bd_1a35},
+            {Return_Metadata, nil, {32, 32, 3,  8}, 0x_c6bd_1a35},
         },
     },
     {
         "cm7n0g04", // modification time, 01-jan-1970 00:00:00
         {
-            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_c6bd_1a35},
+            {Return_Metadata, nil, {32, 32, 3,  8}, 0x_c6bd_1a35},
         },
     },
     {
         "cm9n0g04", // modification time, 31-dec-1999 23:59:59
         {
-            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_c6bd_1a35},
+            {Return_Metadata, nil, {32, 32, 3,  8}, 0x_c6bd_1a35},
         },
     },
     {
         "cs3n2c16", // color, 13 significant bits
         {
-            {Return_Metadata, OK, {32, 32, 3, 16}, 0x_7919_bec4},
+            {Return_Metadata, nil, {32, 32, 3, 16}, 0x_7919_bec4},
         },
     },
     {
         "cs3n3p08", // paletted, 3 significant bits
         {
-            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_c472_63e3},
+            {Return_Metadata, nil, {32, 32, 3,  8}, 0x_c472_63e3},
         },
     },
     {
         "cs5n2c08", // color, 5 significant bits
         {
-            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_1b16_d169},
+            {Return_Metadata, nil, {32, 32, 3,  8}, 0x_1b16_d169},
         },
     },
     {
         "cs5n3p08", // paletted, 5 significant bits
         {
-            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_1b16_d169},
+            {Return_Metadata, nil, {32, 32, 3,  8}, 0x_1b16_d169},
         },
     },
     {
         "cs8n2c08", // color, 8 significant bits (reference)
         {
-            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_7306_351c},
+            {Return_Metadata, nil, {32, 32, 3,  8}, 0x_7306_351c},
         },
     },
     {
         "cs8n3p08", // paletted, 8 significant bits (reference)
         {
-            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_7306_351c},
+            {Return_Metadata, nil, {32, 32, 3,  8}, 0x_7306_351c},
         },
     },
     {
         "ct0n0g04", // no textual data
         {
-            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_c6bd_1a35},
+            {Return_Metadata, nil, {32, 32, 3,  8}, 0x_c6bd_1a35},
         },
     },
     {
         "ct1n0g04", // with textual data
         {
-            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_c6bd_1a35},
+            {Return_Metadata, nil, {32, 32, 3,  8}, 0x_c6bd_1a35},
         },
     },
     {
         "ctzn0g04", // with compressed textual data
         {
-            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_c6bd_1a35},
+            {Return_Metadata, nil, {32, 32, 3,  8}, 0x_c6bd_1a35},
         },
     },
     {
         "cten0g04", // international UTF-8, english
         {
-            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_908f_d2b2},
+            {Return_Metadata, nil, {32, 32, 3,  8}, 0x_908f_d2b2},
         },
     },
     {
         "ctfn0g04", // international UTF-8, finnish
         {
-            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_7f7a_43a7},
+            {Return_Metadata, nil, {32, 32, 3,  8}, 0x_7f7a_43a7},
         },
     },
     {
         "ctgn0g04", // international UTF-8, greek
         {
-            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_0ad1_d3d6},
+            {Return_Metadata, nil, {32, 32, 3,  8}, 0x_0ad1_d3d6},
         },
     },
     {
         "cthn0g04", // international UTF-8, hindi
         {
-            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_c461_c896},
+            {Return_Metadata, nil, {32, 32, 3,  8}, 0x_c461_c896},
         },
     },
     {
         "ctjn0g04", // international UTF-8, japanese
         {
-            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_5539_0861},
+            {Return_Metadata, nil, {32, 32, 3,  8}, 0x_5539_0861},
         },
     },
     {
         "exif2c08", // chunk with jpeg exif data
         {
-            {Return_Metadata, OK, {32, 32, 3,  8}, 0x_1a50_22ef},
+            {Return_Metadata, nil, {32, 32, 3,  8}, 0x_1a50_22ef},
         },
     },
 };
@@ -1213,85 +1212,85 @@ Corrupt_PNG_Tests   := []PNG_Test{
     {
         "xs1n0g01", // signature byte 1 MSBit reset to zero
         {
-            {Default, OK, {}, 0x_0000_0000},
+            {Default, nil, {}, 0x_0000_0000},
         },
     },
     {
         "xs2n0g01", // signature byte 2 is a 'Q'
         {
-            {Default, OK, {}, 0x_0000_0000},
+            {Default, nil, {}, 0x_0000_0000},
         },
     },
     {
         "xs4n0g01", // signature byte 4 lowercase
         {
-            {Default, OK, {}, 0x_0000_0000},
+            {Default, nil, {}, 0x_0000_0000},
         },
     },
     {
         "xs7n0g01", // 7th byte a space instead of control-Z
         {
-            {Default, OK, {}, 0x_0000_0000},
+            {Default, nil, {}, 0x_0000_0000},
         },
     },
     {
         "xcrn0g04", // added cr bytes
         {
-            {Default, OK, {}, 0x_0000_0000},
+            {Default, nil, {}, 0x_0000_0000},
         },
     },
     {
         "xlfn0g04", // added lf bytes
         {
-            {Default, OK, {}, 0x_0000_0000},
+            {Default, nil, {}, 0x_0000_0000},
         },
     },
     {
         "xhdn0g08", // incorrect IHDR checksum
         {
-            {Default, OK, {}, 0x_0000_0000},
+            {Default, nil, {}, 0x_0000_0000},
         },
     },
     {
         "xc1n0g08", // color type 1
         {
-            {Default, OK, {}, 0x_0000_0000},
+            {Default, nil, {}, 0x_0000_0000},
         },
     },
     {
         "xc9n2c08", // color type 9
         {
-            {Default, OK, {}, 0x_0000_0000},
+            {Default, nil, {}, 0x_0000_0000},
         },
     },
     {
         "xd0n2c08", // bit-depth 0
         {
-            {Default, OK, {}, 0x_0000_0000},
+            {Default, nil, {}, 0x_0000_0000},
         },
     },
     {
         "xd3n2c08", // bit-depth 3
         {
-            {Default, OK, {}, 0x_0000_0000},
+            {Default, nil, {}, 0x_0000_0000},
         },
     },
     {
         "xd9n2c08", // bit-depth 99
         {
-            {Default, OK, {}, 0x_0000_0000},
+            {Default, nil, {}, 0x_0000_0000},
         },
     },
     {
         "xdtn0g01", // missing IDAT chunk
         {
-            {Default, OK, {}, 0x_0000_0000},
+            {Default, nil, {}, 0x_0000_0000},
         },
     },
     {
         "xcsn0g01", // incorrect IDAT checksum
         {
-            {Default, OK, {}, 0x_0000_0000},
+            {Default, nil, {}, 0x_0000_0000},
         },
     },
 
@@ -1304,19 +1303,19 @@ No_Postprocesing_Tests := []PNG_Test{
     {
         "ps1n0g08", // six-cube suggested palette (1 byte) in grayscale image
         {
-            {No_Channel_Expansion, OK, {32, 32, 1,  8}, 0x784b_4a4e},
+            {No_Channel_Expansion, nil, {32, 32, 1,  8}, 0x784b_4a4e},
         },
     },
     {
         "basn0g16", // 16 bit (64k level) grayscale
         {
-            {No_Channel_Expansion, OK, {32, 32, 1, 16}, 0x_2ab1_5133},
+            {No_Channel_Expansion, nil, {32, 32, 1, 16}, 0x_2ab1_5133},
         },
     },
     {
         "basn3p04", // 4 bit (16 color) paletted
         {
-            {No_Channel_Expansion, OK, {32, 32, 1,  8}, 0x_280e_99f1},
+            {No_Channel_Expansion, nil, {32, 32, 1,  8}, 0x_280e_99f1},
         },
     },
 };
@@ -1490,9 +1489,9 @@ run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
 
             error  := fmt.tprintf("%v failed with %v.", file.file, err);
             if corrupt_test {
-                passed = err != compress.General_Error.OK;
+                passed = err != nil;
             } else {
-                passed = err == test.expected_error;
+                passed = (test.expected_error == nil && err == nil) || (test.expected_error == err);
             }
             failed_to_load := !passed;
 

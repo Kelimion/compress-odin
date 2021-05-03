@@ -12,7 +12,7 @@ package zip
 */
 
 // import zlib "../zlib"
-import "../common"
+import "core:compress"
 
 import "core:os"
 import "core:time"
@@ -220,19 +220,17 @@ Digital_Signature :: struct #packed {
 	// Signature data (variable size)
 }
 
-Error     :: common.Compress_Error;
-E_General :: common.General_Error;
-E_Deflate :: common.Deflate_Error;
-E_ZIP     :: common.ZIP_Error;
-is_kind   :: common.is_kind;
-
+Error     :: compress.Error;
+E_General :: compress.General_Error;
+E_Deflate :: compress.Deflate_Error;
+E_ZIP     :: compress.ZIP_Error;
 
 parse_zip_file :: proc(buf: []u8) -> (err: Error) {
 
 	r := bytes.Reader{};
 	bytes.reader_init(&r, buf);
 	stream := bytes.reader_to_stream(&r);
-	c := common.Context{
+	c := compress.Context{
 		input = stream,
 	};
 
@@ -250,7 +248,7 @@ parse_zip_file :: proc(buf: []u8) -> (err: Error) {
 	_, io_err = c.input->impl_seek(0, .Start);
 
 	for {
-		sig, io_err = common.peek_data(&c, Signature);
+		sig, io_err = compress.peek_data(&c, Signature);
 		if io_err != .None {
 			fmt.println("Read ran short trying to read the next section signature.");
 			return E_General.Stream_Too_Short;
@@ -268,7 +266,7 @@ parse_zip_file :: proc(buf: []u8) -> (err: Error) {
 			}
 		}
 	
-		file_header, io_err = common.read_data(&c, ZIP_Local_File_Header);
+		file_header, io_err = compress.read_data(&c, ZIP_Local_File_Header);
 		if io_err != .None {
 			return E_ZIP.Invalid_ZIP_File_Signature;	
 		}
@@ -313,7 +311,7 @@ parse_zip_file :: proc(buf: []u8) -> (err: Error) {
 				return E_General.Stream_Too_Short;
 			}
 
-			sig, io_err = common.peek_data(&c, Signature);
+			sig, io_err = compress.peek_data(&c, Signature);
 			if io_err != .None {
 				fmt.println("Read ran short trying to peek at the next section signature.");
 				fmt.printf("Last seek wanted to take us to offset %v\n", sook);
@@ -336,7 +334,7 @@ parse_zip_file :: proc(buf: []u8) -> (err: Error) {
 	central_header: Central_File_Header;
 
 	for {
-		sig, io_err = common.peek_data(&c, Signature);
+		sig, io_err = compress.peek_data(&c, Signature);
 		if io_err != .None {
 			fmt.println("Read ran short trying to read the next section signature.");
 			return E_General.Stream_Too_Short;
@@ -345,7 +343,7 @@ parse_zip_file :: proc(buf: []u8) -> (err: Error) {
 			break;
 		}
 
-		central_header, io_err = common.read_data(&c, Central_File_Header);
+		central_header, io_err = compress.read_data(&c, Central_File_Header);
 		if io_err != .None {
 			return E_General.Stream_Too_Short;
 		}
@@ -397,14 +395,14 @@ parse_zip_file :: proc(buf: []u8) -> (err: Error) {
 	}
 	end_of_central: End_of_Central_Directory_Record;
 
-	end_of_central, io_err = common.read_data(&c, End_of_Central_Directory_Record);
+	end_of_central, io_err = compress.read_data(&c, End_of_Central_Directory_Record);
 	if io_err != .None {
 		return E_General.Stream_Too_Short;
 	}
 
 	fmt.println(end_of_central);
 
-	return E_General.OK;
+	return nil;
 }
 
 dos_datetime_to_time :: proc(datetime: u32le) -> (t: time.Time) {
