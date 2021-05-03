@@ -19,6 +19,7 @@ import "core:time"
 WRITE_PPM_ON_FAIL :: #config(WRITE_PPM_ON_FAIL, false);
 
 expect  :: testing.expect;
+I_Error :: image.Error;
 
 @test
 zlib_test :: proc(t: ^testing.T) {
@@ -1212,85 +1213,85 @@ Corrupt_PNG_Tests   := []PNG_Test{
     {
         "xs1n0g01", // signature byte 1 MSBit reset to zero
         {
-            {Default, nil, {}, 0x_0000_0000},
+            {Default, I_Error.Invalid_PNG_Signature, {}, 0x_0000_0000},
         },
     },
     {
         "xs2n0g01", // signature byte 2 is a 'Q'
         {
-            {Default, nil, {}, 0x_0000_0000},
+            {Default, I_Error.Invalid_PNG_Signature, {}, 0x_0000_0000},
         },
     },
     {
         "xs4n0g01", // signature byte 4 lowercase
         {
-            {Default, nil, {}, 0x_0000_0000},
+            {Default, I_Error.Invalid_PNG_Signature, {}, 0x_0000_0000},
         },
     },
     {
         "xs7n0g01", // 7th byte a space instead of control-Z
         {
-            {Default, nil, {}, 0x_0000_0000},
+            {Default, I_Error.Invalid_PNG_Signature, {}, 0x_0000_0000},
         },
     },
     {
         "xcrn0g04", // added cr bytes
         {
-            {Default, nil, {}, 0x_0000_0000},
+            {Default, I_Error.Invalid_PNG_Signature, {}, 0x_0000_0000},
         },
     },
     {
         "xlfn0g04", // added lf bytes
         {
-            {Default, nil, {}, 0x_0000_0000},
+            {Default, I_Error.Invalid_PNG_Signature, {}, 0x_0000_0000},
         },
     },
     {
         "xhdn0g08", // incorrect IHDR checksum
         {
-            {Default, nil, {}, 0x_0000_0000},
+            {Default, compress.General_Error.Checksum_Failed, {}, 0x_0000_0000},
         },
     },
     {
         "xc1n0g08", // color type 1
         {
-            {Default, nil, {}, 0x_0000_0000},
+            {Default, I_Error.Unknown_Color_Type, {}, 0x_0000_0000},
         },
     },
     {
         "xc9n2c08", // color type 9
         {
-            {Default, nil, {}, 0x_0000_0000},
+            {Default, I_Error.Unknown_Color_Type, {}, 0x_0000_0000},
         },
     },
     {
         "xd0n2c08", // bit-depth 0
         {
-            {Default, nil, {}, 0x_0000_0000},
+            {Default, I_Error.Invalid_Color_Bit_Depth_Combo, {}, 0x_0000_0000},
         },
     },
     {
         "xd3n2c08", // bit-depth 3
         {
-            {Default, nil, {}, 0x_0000_0000},
+            {Default, I_Error.Invalid_Color_Bit_Depth_Combo, {}, 0x_0000_0000},
         },
     },
     {
         "xd9n2c08", // bit-depth 99
         {
-            {Default, nil, {}, 0x_0000_0000},
+            {Default, I_Error.Invalid_Color_Bit_Depth_Combo, {}, 0x_0000_0000},
         },
     },
     {
         "xdtn0g01", // missing IDAT chunk
         {
-            {Default, nil, {}, 0x_0000_0000},
+            {Default, I_Error.IDAT_Missing, {}, 0x_0000_0000},
         },
     },
     {
         "xcsn0g01", // incorrect IDAT checksum
         {
-            {Default, nil, {}, 0x_0000_0000},
+            {Default, compress.General_Error.Checksum_Failed, {}, 0x_0000_0000},
         },
     },
 
@@ -1482,23 +1483,17 @@ run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
             count        += 1;
             subtotal     += 1;
             passed       := false;
-             /* Corrupt file tests start with an 'x' */
-            corrupt_test := file.file[0] == 'x';
 
             img, err := png.load(test_file, test.options);
 
             error  := fmt.tprintf("%v failed with %v.", file.file, err);
-            if corrupt_test {
-                passed = err != nil;
-            } else {
-                passed = (test.expected_error == nil && err == nil) || (test.expected_error == err);
-            }
-            failed_to_load := !passed;
+
+            passed = (test.expected_error == nil && err == nil) || (test.expected_error == err);
+            failed_to_load := err != nil;
 
             expect(t, passed, error);
 
-            if passed && !corrupt_test {
-                // No point in running the other tests if it didn't load.
+            if !failed_to_load { // No point in running the other tests if it didn't load.
                 pixels := bytes.buffer_to_bytes(&img.pixels);
 
                 when true {
@@ -1510,14 +1505,6 @@ run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
                     dims_pass := test.dims == dims;
 
                     expect(t, dims_pass, error);
-
-                    // if !dims_pass {
-                    //     test_bytes := transmute([size_of(PNG_Dims)]u8)test.dims;
-                    //     dims_bytes := transmute([size_of(PNG_Dims)]u8)dims;
-                    //     fmt.printf("test: %v\n", test_bytes);
-                    //     fmt.printf("dims: %v\n", dims_bytes);
-                    //     fmt.println();
-                    // }
 
                     passed &= dims_pass;
                 } else {
