@@ -100,7 +100,7 @@ Blend_BG_Keep        :: image.Options{.blend_background, .alpha_add_if_missing};
 Return_Metadata      :: image.Options{.return_metadata};
 No_Channel_Expansion :: image.Options{.do_not_expand_channels, .return_metadata};
 
-PNG_Dims    :: struct #packed {
+PNG_Dims    :: struct {
     width:     int,
     height:    int,
     channels:  int,
@@ -1489,43 +1489,23 @@ run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
             error  := fmt.tprintf("%v failed with %v.", file.file, err);
 
             passed = (test.expected_error == nil && err == nil) || (test.expected_error == err);
-            failed_to_load := err != nil;
 
             expect(t, passed, error);
 
-            if !failed_to_load { // No point in running the other tests if it didn't load.
+            if err == nil { // No point in running the other tests if it didn't load.
                 pixels := bytes.buffer_to_bytes(&img.pixels);
 
-                when true {
-                    // This struct compare fails at -opt:2 if PNG_Dims is not #packed.
+                // This struct compare fails at -opt:2 if PNG_Dims is not #packed.
 
-                    dims   := PNG_Dims{img.width, img.height, img.channels, img.depth};
-                    error  = fmt.tprintf("%v has %v, expected: %v.", file.file, dims, test.dims);
+                dims   := PNG_Dims{img.width, img.height, img.channels, img.depth};
+                error  = fmt.tprintf("%v has %v, expected: %v.", file.file, dims, test.dims);
 
-                    dims_pass := test.dims == dims;
+                dims_pass := test.dims == dims;
 
-                    expect(t, dims_pass, error);
+                expect(t, dims_pass, error);
 
-                    passed &= dims_pass;
-                } else {
-                    // This works even at -opt:2
+                passed &= dims_pass;
 
-                    error  = fmt.tprintf("%v width is %v, expected %v",    file.file, test.dims.width,    img.width);
-                    expect(t, test.dims.width    == img.width,    error);
-                    passed &= test.dims.width    == img.width;
-
-                    error  = fmt.tprintf("%v height is %v, expected %v",   file.file, test.dims.height,   img.height);
-                    expect(t, test.dims.height   == img.height,   error);
-                    passed &= test.dims.height   == img.height;
-
-                    error  = fmt.tprintf("%v channels is %v, expected %v", file.file, test.dims.channels, img.channels);
-                    expect(t, test.dims.channels == img.channels, error);
-                    passed &= test.dims.channels == img.channels;
-
-                    error  = fmt.tprintf("%v depth is %v, expected %v",    file.file, test.dims.depth,    img.depth);
-                    expect(t, test.dims.depth    == img.depth,    error);
-                    passed &= test.dims.depth    == img.depth;
-                }
 
                 hash   := hash.crc32(pixels);
                 error  = fmt.tprintf("%v test %v hash is %08x, expected %08x.", file.file, count, hash, test.hash);
@@ -1679,15 +1659,6 @@ run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
                                             expect(t, text.text == test_text && text_ok, error);
                                         }
                                     }
-
-                                case "doozo": // with compressed textual data
-                                    if file.file in Expected_Text {
-                                        if text.keyword in Expected_Text[file.file] {
-                                            test := Expected_Text[file.file][text.keyword];
-                                            error  = fmt.tprintf("%v test %v text keyword {{%v}}:'%v', expected '%v'.", file.file, count, text.keyword, text.text, test.text);
-                                            expect(t, text.text == test.text && text_ok, error);
-                                        }
-                                    }
                                 }
                             case .iTXt:
                                 text, text_ok := png.text(c);
@@ -1758,7 +1729,7 @@ run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
                 }
             }
 
-            if WRITE_PPM_ON_FAIL && !passed && !failed_to_load {
+            if WRITE_PPM_ON_FAIL && !passed && err == nil { // It loaded but had an error in its compares.
                 testing.logf(t, "Test failed, writing ppm/%v-%v.ppm to help debug.\n", file.file, count);
                 output := fmt.tprintf("ppm/%v-%v.ppm", file.file, count);
                 write_image_as_ppm(output, img);
