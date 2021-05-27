@@ -4,6 +4,7 @@ Compress-Odin aims to implement several common compression algorithms and file f
 
 ## Roadmap
 Stage 1:
+- OpenEXR reader, minus the patented Dreamworks compression method introduced in 3.0.
 - Deflate compressor
 - ZLIB 'writer', PNG writer
 - Tar / Tar.gz packer and unpacker
