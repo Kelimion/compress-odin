@@ -16,6 +16,8 @@ import "core:mem"
 import "core:os"
 import "core:time"
 
+import "core:runtime"
+
 WRITE_PPM_ON_FAIL :: #config(WRITE_PPM_ON_FAIL, false);
 
 expect  :: testing.expect;
@@ -104,7 +106,7 @@ PNG_Dims    :: struct {
     width:     int,
     height:    int,
     channels:  int,
-    depth:     u8,
+    depth:     int,
 }
 
 Basic_PNG_Tests       := []PNG_Test{
@@ -1473,10 +1475,16 @@ png_test :: proc(t: ^testing.T) {
 }
 
 run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
+
+    context = runtime.default_context();
+
     for file in suite {
         test_suite_path := "PNG test suite";
 
         test_file := fmt.tprintf("%v/%v.png", test_suite_path, file.file);
+
+        img: ^png.Image;
+        err: png.Error;
 
         count := 0;
         for test in file.tests {
@@ -1484,7 +1492,7 @@ run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
             subtotal     += 1;
             passed       := false;
 
-            img, err := png.load(test_file, test.options);
+            img, err = png.load(test_file, test.options);
 
             error  := fmt.tprintf("%v failed with %v.", file.file, err);
 
@@ -1514,14 +1522,13 @@ run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
                 passed &= test.hash == hash;
 
                 if .return_metadata in test.options {
-                    if v, ok := img.sidecar.(png.Info); ok {
+                    if v, ok := img.sidecar.(^png.Info); ok {
                         for c in v.chunks {
                             #partial switch(c.header.type) {
                             case .gAMA:
                                 switch(file.file) {
                                 case "pp0n2c16", "pp0n6a08":
                                     gamma := png.gamma(c);
-
                                     expected_gamma := f32(1.0);
                                     error  = fmt.tprintf("%v test %v gAMA is %v, expected %v.", file.file, count, gamma, expected_gamma);
                                     expect(t, gamma == expected_gamma, error);
@@ -1802,7 +1809,7 @@ write_image_as_ppm :: proc(filename: string, image: ^image.Image) -> (success: b
     defer close(fd);
 
     write_string(fd,
-        fmt.tprintf("P6\n%v %v\n%v\n", width, height, (1 << depth -1)),
+        fmt.tprintf("P6\n%v %v\n%v\n", width, height, (1 << uint(depth) -1)),
     );
 
     if channels == 3 {

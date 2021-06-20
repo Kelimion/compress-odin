@@ -14,11 +14,11 @@ import "core:os"
 main :: proc() {
 	file: string;
 
-	options := image.Options{};
+	options := image.Options{.return_metadata};
 	err:       compress.Error;
 	img:      ^image.Image;
 
-	file = "../test/logo-slim.png";
+	file = "../test/PNG test suite/logo-slim.png";
 
 	img, err = png.load(file, options);
 	defer png.destroy(img);
@@ -26,12 +26,13 @@ main :: proc() {
 	if err != nil {
 		fmt.printf("Trying to read PNG file %v returned %v\n", file, err);
 	} else {
-		v:  png.Info;
+		v:  ^png.Info;
 		ok: bool;
 
 		fmt.printf("Image: %vx%vx%v, %v-bit.\n", img.width, img.height, img.channels, img.depth);
 
-		if v, ok = img.sidecar.(png.Info); ok {
+		if v, ok = img.sidecar.(^png.Info); ok {
+			fmt.printf("OK.\n");
 			// Handle ancillary chunks as you wish.
 			// We provide helper functions for a few types.
 			for c in v.chunks {
