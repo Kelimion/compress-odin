@@ -17,11 +17,26 @@ import "core:os"
 import "core:time"
 
 import "core:runtime"
+import "core:io"
 
 WRITE_PPM_ON_FAIL :: #config(WRITE_PPM_ON_FAIL, false);
 
-expect  :: testing.expect;
+when ODIN_TEST {
+    expect  :: testing.expect;
+} else {
+    expect  :: proc(t: ^testing.T, condition: bool, message: string) {
+        if !condition {
+            fmt.println(message);
+        }
+    }
+}
 I_Error :: image.Error;
+
+main :: proc() {
+    w, _ := io.to_writer(os.stream_from_handle(os.stdout));
+    t := testing.T{w=w};
+    png_test(&t);
+}
 
 @test
 zlib_test :: proc(t: ^testing.T) {
@@ -1520,9 +1535,11 @@ run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
                 expect(t, test.hash == hash, error);
 
                 passed &= test.hash == hash;
-
                 if .return_metadata in test.options {
-                    if v, ok := img.sidecar.(^png.Info); ok {
+                    v: ^png.Info;
+
+                    if img.metadata_ptr != nil && img.metadata_type == png.Info {
+                        v = (^png.Info)(img.metadata_ptr);
                         for c in v.chunks {
                             #partial switch(c.header.type) {
                             case .gAMA:
