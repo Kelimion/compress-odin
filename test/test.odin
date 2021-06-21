@@ -1,5 +1,15 @@
 package tests
 
+/*
+    Copyright 2021 Jeroen van Rijn <nom@duclavier.com>.
+    Made available under Odin's BSD-2 license.
+
+    List of contributors:
+        Jeroen van Rijn: Initial implementation.
+
+    A test suite for ZLIB, GZIP and PNG.
+*/
+
 import "core:testing"
 
 import "core:compress"
@@ -1528,7 +1538,6 @@ run_png_suite :: proc(t: ^testing.T, suite: []PNG_Test) -> (subtotal: int) {
                 expect(t, dims_pass, error);
 
                 passed &= dims_pass;
-
 
                 hash   := hash.crc32(pixels);
                 error  = fmt.tprintf("%v test %v hash is %08x, expected %08x.", file.file, count, hash, test.hash);
