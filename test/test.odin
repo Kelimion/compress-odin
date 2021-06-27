@@ -113,7 +113,7 @@ gzip_test :: proc(t: ^testing.T) {
 	mem.tracking_allocator_init(&track, context.allocator);
 	context.allocator = mem.tracking_allocator(&track);
 
-	err := gzip.load(TEST, &buf);
+	err := gzip.load(TEST, &buf, 438);
 
 	expect(t, err == nil, "GZIP failed to decompress TEST");
 	s := bytes.buffer_to_string(&buf);
