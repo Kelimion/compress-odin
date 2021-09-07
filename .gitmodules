@@ -1,3 +1,0 @@
-[submodule "tests/OpenEXR test suite"]
-	path = tests/OpenEXR test suite
-	url = https://github.com/AcademySoftwareFoundation/openexr-images.git
