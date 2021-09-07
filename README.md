@@ -16,6 +16,8 @@ Stage 1:
 Stage 2:
 - Jpeg loader
 - Jpeg writer
+- TIFF reader and writer
+- EXIF reader and writer
 - LZ4 packer and unpacker
 - BZIP2 / Tar.bz2 packer and unpacker
 - Deflate64 packer and unpacker / ZIP 2.5+ format support.
@@ -32,10 +34,13 @@ ZLIB, DEFLATE and GZIP decompression are implemented and became Odin's `core:com
 
 PNG 1.2 support has been implemented and has become Odin's `core:image/png` standard package.
 
-A test suite lives under `test`. It tests `zlib`, `gzip` and runs the `png` implementation through 200+ tests against Willem van Schaik's PNG Suite.
+A test suite lives under `tests`. It tests `zlib`, `gzip` and runs the `png` implementation through 200+ tests against Willem van Schaik's PNG Suite.
 
 ZIP:
 - [x] Structures for ZIP 6.3.9 are defined and a basic file parser has been started.
+
+OpenEXR:
+- [x] OpenEXR can load uncompressed, ZIP and ZIPS compressed images.
 
 Patented features added in v6.2 of the spec will not be implemented beyond defining their enums and structs,
 so their use may be appropriately signalled to the end user, even if using their payloads remains outside the scope of this implementation.
